@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracker QA 분석 리포트</title>
+<style>
+:root {
+  --conflict: #dc3545;
+  --expr: #fd7e14;
+  --missing: #e6a817;
+  --confirm: #17a2b8;
+  --ok: #28a745;
+  --bg: #f4f6f9;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif; background: var(--bg); color: #212529; }
+.report-layout { display: grid; grid-template-columns: 230px 1fr; min-height: 100vh; }
+
+/* 사이드바 */
+.sidebar { background: #1a1a2e; padding: 0; position: sticky; top: 0; height: 100vh; overflow-y: auto; }
+.sidebar-logo { padding: 24px 20px 16px; color: white; font-weight: 700; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-logo small { display: block; font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.sidebar-item { display: flex; align-items: center; gap: 8px; padding: 10px 20px; color: rgba(255,255,255,0.65); cursor: pointer; font-size: 0.88rem; border-left: 3px solid transparent; text-decoration: none; }
+.sidebar-item:hover { background: rgba(255,255,255,0.08); color: white; border-left-color: #4a9eff; }
+.sidebar-badge { margin-left: auto; border-radius: 10px; padding: 1px 7px; font-size: 0.72rem; font-weight: 700; background: rgba(255,255,255,0.15); }
+.sidebar-badge.red { background: var(--conflict); }
+.sidebar-badge.orange { background: var(--expr); }
+.sidebar-badge.yellow { background: var(--missing); color: #333; }
+.sidebar-badge.blue { background: var(--confirm); }
+.sidebar-badge.block { background: #6c757d; }
+.sidebar-divider { border-top: 1px solid rgba(255,255,255,0.08); margin: 8px 0; }
+
+/* 헤더 */
+.report-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; padding: 32px 40px 28px; }
+.report-header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 6px; }
+.meta { font-size: 0.82rem; color: rgba(255,255,255,0.65); display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+.meta span::before { content: '•'; margin-right: 5px; }
+.issue-cards { display: flex; gap: 14px; flex-wrap: wrap; }
+.card { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 10px; font-size: 0.9rem; min-width: 130px; }
+.card .count { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.card.conflict { border-top: 3px solid var(--conflict); }
+.card.expr { border-top: 3px solid var(--expr); }
+.card.missing { border-top: 3px solid var(--missing); }
+.card.confirm { border-top: 3px solid var(--confirm); }
+.card.block { border-top: 3px solid #adb5bd; }
+
+/* 메인 */
+.main-content { padding: 32px 40px; }
+section { margin-bottom: 40px; scroll-margin-top: 24px; }
+.section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #e9ecef; display: flex; align-items: center; gap: 8px; }
+
+/* 이슈 카드 */
+.issue-card { background: white; border-radius: 10px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); overflow: hidden; border-left: 4px solid transparent; }
+.issue-card.severity-conflict { border-left-color: var(--conflict); }
+.issue-card.severity-expr { border-left-color: var(--expr); }
+.issue-card.severity-missing { border-left-color: var(--missing); }
+.issue-card.severity-confirm { border-left-color: var(--confirm); }
+.issue-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #f8f9fa; border-bottom: 1px solid #e9ecef; flex-wrap: wrap; }
+.issue-id { font-weight: 700; font-size: 0.82rem; color: #495057; background: #e9ecef; padding: 2px 7px; border-radius: 4px; }
+.severity-badge { font-size: 0.8rem; font-weight: 600; }
+.impact { font-size: 0.76rem; padding: 2px 8px; border-radius: 4px; background: #e9ecef; }
+.impact.high { background: #ffe0e0; color: var(--conflict); font-weight: 600; }
+.impact.medium { background: #fff3cd; color: #856404; }
+.impact.low { background: #d1ecf1; color: #0c5460; }
+.tc-block { font-size: 0.76rem; padding: 2px 8px; border-radius: 4px; background: #f8d7da; color: #721c24; margin-left: auto; font-weight: 600; }
+.tc-ref { font-size: 0.76rem; padding: 2px 8px; border-radius: 4px; background: #d1ecf1; color: #0c5460; margin-left: auto; }
+.issue-body { padding: 16px; }
+.issue-title { font-weight: 600; font-size: 0.98rem; margin-bottom: 12px; color: #1a1a2e; }
+.doc-ref { margin-bottom: 10px; }
+.doc-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #6c757d; background: #e9ecef; padding: 1px 6px; border-radius: 3px; margin-right: 6px; }
+.doc-name { font-size: 0.83rem; color: #495057; }
+blockquote.original-text { margin: 6px 0 0 0; padding: 8px 12px; background: #f8f9fa; border-left: 3px solid #dee2e6; font-size: 0.86rem; color: #495057; border-radius: 0 4px 4px 0; }
+.issue-desc { margin: 12px 0; font-size: 0.9rem; color: #343a40; line-height: 1.6; }
+.action-box { background: #e8f4fd; border: 1px solid #bee5eb; border-radius: 6px; padding: 10px 14px; font-size: 0.86rem; color: #0c5460; }
+.no-issue { background: white; border-radius: 8px; padding: 20px; text-align: center; color: #6c757d; font-size: 0.9rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+/* 테스트 포인트 */
+.test-matrix { width: 100%; border-collapse: collapse; font-size: 0.86rem; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.test-matrix th { background: #1a1a2e; color: white; padding: 10px 14px; text-align: left; font-size: 0.82rem; }
+.test-matrix td { padding: 9px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+.test-matrix tr:last-child td { border-bottom: none; }
+.test-matrix tr:hover td { background: #f8f9fa; }
+.priority-high { color: var(--conflict); font-weight: 700; }
+.priority-medium { color: #856404; font-weight: 600; }
+.priority-low { color: #6c757d; }
+.tc-type-tag { display: inline-block; font-size: 0.72rem; padding: 1px 6px; border-radius: 3px; background: #e9ecef; color: #495057; margin: 1px; }
+
+/* 유저 스토리 */
+.user-story { background: white; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.story-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.role-badge { background: #1a1a2e; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+.story-goal { font-size: 0.85rem; color: #6c757d; }
+.flow-steps { margin-top: 10px; }
+.flow-step { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px dashed #e9ecef; font-size: 0.88rem; }
+.flow-step:last-child { border-bottom: none; }
+.step-no { font-weight: 700; color: #4a9eff; min-width: 22px; }
+.flow-label { font-size: 0.72rem; font-weight: 700; padding: 1px 6px; border-radius: 3px; min-width: 50px; text-align: center; }
+.flow-label.happy { background: #d4edda; color: #155724; }
+.flow-label.alt { background: #fff3cd; color: #856404; }
+.flow-label.error { background: #f8d7da; color: #721c24; }
+.domain-note { background: #fff8c5; border-left: 3px solid #ffc107; padding: 8px 12px; border-radius: 0 4px 4px 0; font-size: 0.84rem; margin: 8px 0; }
+.edge-list { background: white; border-radius: 10px; padding: 16px 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.edge-list h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 8px; color: #495057; }
+.edge-list ul { list-style: none; }
+.edge-list li { padding: 5px 0; font-size: 0.86rem; border-bottom: 1px dashed #f0f0f0; display: flex; gap: 8px; }
+.edge-list li:last-child { border-bottom: none; }
+.edge-list li::before { content: '⚡'; font-size: 0.75rem; }
+
+/* 개요 섹션 */
+.overview-box { background: white; border-radius: 10px; padding: 20px 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.07); margin-bottom: 16px; }
+.overview-box h4 { font-size: 0.9rem; font-weight: 700; color: #495057; margin-bottom: 8px; }
+.overview-box p { font-size: 0.88rem; line-height: 1.6; color: #343a40; }
+.doc-list { list-style: none; }
+.doc-list li { padding: 4px 0; font-size: 0.86rem; color: #343a40; display: flex; gap: 8px; }
+.doc-list li::before { content: '📄'; font-size: 0.8rem; }
+
+/* RTM 미리보기 */
+.rtm-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.07); }
+.rtm-table th { background: #1a1a2e; color: white; padding: 9px 12px; text-align: left; font-size: 0.78rem; }
+.rtm-table td { padding: 8px 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; font-size: 0.82rem; }
+.rtm-table tr:last-child td { border-bottom: none; }
+.rtm-table tr.excluded td { color: #adb5bd; }
+.rtm-badge { font-size: 0.7rem; padding: 1px 5px; border-radius: 3px; font-weight: 600; }
+.rtm-badge.tbd { background: #f8d7da; color: #721c24; }
+.rtm-badge.active { background: #d4edda; color: #155724; }
+</style>
+</head>
+<body>
+<div class="report-layout">
+
+<!-- 사이드바 -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    📋 QA 분석 리포트
+    <small>Tracker — plan-analyst</small>
+  </div>
+  <a class="sidebar-item" href="#overview">📁 분석 개요</a>
+  <div class="sidebar-divider"></div>
+  <a class="sidebar-item" href="#conflict">🔴 기획 충돌 <span class="sidebar-badge red">1</span></a>
+  <a class="sidebar-item" href="#expr">🟠 표현 불일치 <span class="sidebar-badge orange">4</span></a>
+  <a class="sidebar-item" href="#missing">🟡 누락 항목 <span class="sidebar-badge yellow">6</span></a>
+  <a class="sidebar-item" href="#confirm">🔵 확인 필요 <span class="sidebar-badge blue">5</span></a>
+  <div class="sidebar-divider"></div>
+  <a class="sidebar-item" href="#testpoints">📋 테스트 포인트</a>
+  <a class="sidebar-item" href="#edgecases">⚡ 엣지 케이스</a>
+  <a class="sidebar-item" href="#userstory">👤 유저 스토리</a>
+  <div class="sidebar-divider"></div>
+  <a class="sidebar-item" href="#rtm">📊 RTM v0 미리보기 <span class="sidebar-badge block">⛔5</span></a>
+</nav>
+
+<!-- 메인 -->
+<div>
+  <!-- 헤더 -->
+  <div class="report-header">
+    <h1>📋 QA 분석 리포트 — Tracker</h1>
+    <div class="meta">
+      <span>대상: Tracker - iVigilance Square - Confluence_20260420.md</span>
+      <span>참조: Case ID - iVigilance Square - Confluence_20260421.md (컨텍스트)</span>
+      <span>분석일: 2026-04-24</span>
+      <span>에이전트: plan-analyst</span>
+    </div>
+    <div class="issue-cards">
+      <div class="card conflict">🔴 충돌 <span class="count">1</span></div>
+      <div class="card expr">🟠 표현 불일치 <span class="count">4</span></div>
+      <div class="card missing">🟡 누락 <span class="count">6</span></div>
+      <div class="card confirm">🔵 확인 필요 <span class="count">5</span></div>
+      <div class="card block">⛔ TC 작성 보류 <span class="count">5</span></div>
+    </div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- 분석 개요 -->
+    <section id="overview">
+      <div class="section-title">📁 분석 개요</div>
+      <div class="overview-box">
+        <h4>대상 기획서</h4>
+        <ul class="doc-list">
+          <li>Tracker - iVigilance Square - Confluence_20260420.md (v1.0.260327, 김나정)</li>
+        </ul>
+        <h4 style="margin-top:12px;">참조 컨텍스트 문서</h4>
+        <ul class="doc-list">
+          <li>Case ID - iVigilance Square - Confluence_20260421.md — Case ID 생성 규칙 (C.1.1/C.1.8.1 매핑 맥락)</li>
+        </ul>
+        <h4 style="margin-top:12px;">분석 범위</h4>
+        <p>Safety > Tracker 화면. 이상사례(AE) 사례의 인입~종결 통합 Tracker 그리드. 그리드 컬럼, 필터/검색, 사례 생성/FU/수정, AE Type 자동 분류, RA Due 계산, 담당자 배정 기능을 포함합니다. 권한 제어·Excel 내보내기·Archive 등 [추후] 항목은 분석 범위에서 제외합니다.</p>
+        <h4 style="margin-top:12px;">외부 로직 참조 현황</h4>
+        <p style="color:#dc3545;font-weight:600;">⚠️ §2.5 보고 출처 분류 / §2.6 AE Type 분류 / §2.7 MFDS 보고 기한 로직이 모두 외부 Confluence 링크만 참조됩니다. 해당 3개 로직이 TC 설계의 핵심이므로, 링크 문서 접근 및 내용 공유가 필요합니다.</p>
+      </div>
+    </section>
+
+    <!-- 기획 충돌 -->
+    <section id="conflict">
+      <div class="section-title">🔴 기획 충돌 (Conflict) — 1건</div>
+
+      <div class="issue-card severity-conflict">
+        <div class="issue-header">
+          <span class="issue-id">CONFLICT-001</span>
+          <span class="severity-badge">🔴 충돌</span>
+          <span class="impact high">영향도: High</span>
+          <span class="tc-block">⛔ TC 작성 보류</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">Void/Nullify 기능의 현재/추후 범위 충돌</div>
+          <div class="doc-ref">
+            <span class="doc-label">문서 A</span>
+            <span class="doc-name">§2.1 사례 생애주기 관리</span>
+            <blockquote class="original-text">"수정, 삭제(Void/Nullify), 보관(Archive) 기능 제공 [추후 예정]"</blockquote>
+          </div>
+          <div class="doc-ref">
+            <span class="doc-label">문서 B</span>
+            <span class="doc-name">§4.1 Tracker 그리드 — FU No 컬럼 비고</span>
+            <blockquote class="original-text">"수정/무효화 시 Amend/Null 표시, 후속보고 순번은 그대로 동일하게 부여"<br>필터링 옵션: "Null, Amend"</blockquote>
+          </div>
+          <div class="issue-desc">§2.1에서 Void/Nullify는 [추후 예정]으로 명시되어 현재 구현 범위 밖입니다. 그러나 §4.1 FU No 컬럼에는 "무효화 시 Null 표시" 로직이 현재 기능처럼 기술되어 있고, 필터링 옵션에도 "Null"이 포함되어 있습니다. 이 FU No의 Null 표시가 현재 범위인지 추후 범위인지 불명확합니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> Void/Nullify 기능의 현재/추후 범위를 확정하고, FU No Null 표시 로직의 구현 시점을 기획서에 명시해주세요. 현재 범위이면 §2.1에서 FU No 로직은 현재 포함 항목으로 분리해야 합니다.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 표현 불일치 -->
+    <section id="expr">
+      <div class="section-title">🟠 표현 불일치 (Expression Gap) — 4건</div>
+
+      <div class="issue-card severity-expr">
+        <div class="issue-header">
+          <span class="issue-id">EXPR-001</span>
+          <span class="severity-badge">🟠 표현 불일치</span>
+          <span class="impact medium">영향도: Medium</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">Void / Null / Nullify 용어 혼용</div>
+          <div class="doc-ref">
+            <span class="doc-label">표현 A</span>
+            <span class="doc-name">§2.1</span>
+            <blockquote class="original-text">"삭제(Void/Nullify)"</blockquote>
+          </div>
+          <div class="doc-ref">
+            <span class="doc-label">표현 B</span>
+            <span class="doc-name">§4.1 FU No 비고 / 필터링 옵션</span>
+            <blockquote class="original-text">"수정/무효화 시 Amend/Null 표시" / 필터링 옵션: "Null"</blockquote>
+          </div>
+          <div class="issue-desc">동일한 케이스 무효화 동작을 "Void", "Nullify", "Null", "무효화"로 혼용하고 있습니다. E2B 규격상 Void와 Nullify는 다른 개념일 수 있습니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> "무효화" 동작에 사용할 단일 용어를 확정 (예: "Nullify / Null" 또는 "Void") 하고, 기획서 전체에 통일해주세요. PV 규격(E2B R3) 기준 검토 필요.</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-expr">
+        <div class="issue-header">
+          <span class="issue-id">EXPR-002</span>
+          <span class="severity-badge">🟠 표현 불일치</span>
+          <span class="impact medium">영향도: Medium</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">신규 사례 생성 버튼명 혼용</div>
+          <div class="doc-ref">
+            <span class="doc-label">표현 A</span>
+            <span class="doc-name">§2.1</span>
+            <blockquote class="original-text">"Manual 생성 버튼 제공"</blockquote>
+          </div>
+          <div class="doc-ref">
+            <span class="doc-label">표현 B</span>
+            <span class="doc-name">§5 기능 설명 / §5-1 제안 구조</span>
+            <blockquote class="original-text">§5: "신규 사례 생성" / §5-1: "+ New Case", "Manual Intake"</blockquote>
+          </div>
+          <div class="issue-desc">신규 케이스 생성 진입점이 섹션마다 "Manual 생성 버튼", "신규 사례 생성", "+ New Case", "Manual Intake"로 다르게 표기됩니다. TC title 및 Expected Result 작성 시 기준 명칭이 필요합니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> 화면에 표시될 버튼 레이블을 단일 표준 명칭으로 확정해주세요. (예: "+ New Case (Manual Intake)")</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-expr">
+        <div class="issue-header">
+          <span class="issue-id">EXPR-003</span>
+          <span class="severity-badge">🟠 표현 불일치</span>
+          <span class="impact low">영향도: Low</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">Status 상태명 괄호 표기의 레이블 혼란</div>
+          <div class="doc-ref">
+            <span class="doc-label">표현 A</span>
+            <span class="doc-name">§4.1 Status 컬럼 비고</span>
+            <blockquote class="original-text">"Approval (승인해주세요)" / "Approved (승인됨)"</blockquote>
+          </div>
+          <div class="doc-ref">
+            <span class="doc-label">표현 B</span>
+            <span class="doc-name">§4.1 Status 필터링 옵션</span>
+            <blockquote class="original-text">"Approval" / "Approved"</blockquote>
+          </div>
+          <div class="issue-desc">괄호 안의 "(승인해주세요)", "(승인됨)"이 UI 레이블인지 내부 메모인지 불명확합니다. TC Expected Result 작성 시 실제 화면 표시 텍스트가 무엇인지 확인이 필요합니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> 괄호 표기가 화면 레이블인지 기획 메모인지 명확히 구분해주세요. 화면 레이블은 "Approval" / "Approved"로 통일 권장.</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-expr">
+        <div class="issue-header">
+          <span class="issue-id">EXPR-004</span>
+          <span class="severity-badge">🟠 표현 불일치</span>
+          <span class="impact low">영향도: Low</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">Follow-up 생성 진입 액션 설명 불일치</div>
+          <div class="doc-ref">
+            <span class="doc-label">표현 A</span>
+            <span class="doc-name">§2.1</span>
+            <blockquote class="original-text">"기존 사례 선택 후 FU 생성 시 Case Edit으로 자동 연결"</blockquote>
+          </div>
+          <div class="doc-ref">
+            <span class="doc-label">표현 B</span>
+            <span class="doc-name">§5 기능 설명 #3</span>
+            <blockquote class="original-text">"트래커 케이스 ID 우클릭하여 Follow-Up 선택하면 Follow-up 생성 페이지(case-edit)에서 생성 가능"</blockquote>
+          </div>
+          <div class="issue-desc">§2.1은 "사례 선택 후 FU 생성"으로 일반적 설명이지만, §5는 "우클릭 → Follow-Up 선택"으로 구체적 인터랙션을 기술합니다. 인터랙션 방식이 우클릭 컨텍스트 메뉴인지 선택 후 버튼 클릭인지 TC 설계에 직접 영향을 미칩니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> FU 생성 진입 방식을 단일 인터랙션으로 명확히 정의해주세요. (예: 우클릭 컨텍스트 메뉴만 지원)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 누락 -->
+    <section id="missing">
+      <div class="section-title">🟡 누락 항목 (Missing) — 6건</div>
+
+      <div class="issue-card severity-missing">
+        <div class="issue-header">
+          <span class="issue-id">MISSING-001</span>
+          <span class="severity-badge">🟡 누락</span>
+          <span class="impact high">영향도: High</span>
+          <span class="tc-block">⛔ TC 작성 보류</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">핵심 비즈니스 로직 3개가 외부 링크 참조만 존재 — 본문 미포함</div>
+          <div class="doc-ref">
+            <span class="doc-label">근거</span>
+            <span class="doc-name">§2.5 / §2.6 / §2.7</span>
+            <blockquote class="original-text">§2.5: "보고 출처 분류 로직 참조" (Confluence 링크)<br>§2.6: "AE Type 분류 로직 참조" (Confluence 링크)<br>§2.7: "MFDS 보고 기한 설정 로직 참조" (Confluence 링크)</blockquote>
+          </div>
+          <div class="issue-desc">Tracker 기능의 핵심인 AE Type(§2.6), Source Type(§2.5), RA Due(§2.7) 계산 로직이 전부 외부 Confluence 링크로만 참조됩니다. TC를 작성하려면 이 3개 로직의 입력조건 → 출력값 매트릭스가 반드시 필요합니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> 세 로직 문서의 내용을 이 기획서에 인라인으로 포함하거나, QA팀에 직접 공유해주세요. 해당 로직을 알기 전까지 AE Type / RA Due / Source Type 관련 TC는 작성 보류합니다.</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-missing">
+        <div class="issue-header">
+          <span class="issue-id">MISSING-002</span>
+          <span class="severity-badge">🟡 누락</span>
+          <span class="impact high">영향도: High</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">Report Type C.1.3 = 2(Study)일 때 출력값 미정의</div>
+          <div class="doc-ref">
+            <span class="doc-label">근거</span>
+            <span class="doc-name">§4.1 Report Type 컬럼 설명</span>
+            <blockquote class="original-text">"C.1.3이 2(Study)인 경우 계획서 번호 대신 출력"</blockquote>
+          </div>
+          <div class="issue-desc">"계획서 번호 대신" 무엇을 출력하는지 명시되지 않았습니다. C.1.3=2일 때 특정 필드값(예: Study 번호, Protocol 번호 등)을 출력하는지, 아니면 "Study"라는 텍스트를 출력하는지 불명확합니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> C.1.3 = 2(Study)일 때 표시할 값과 해당 필드의 E2B 코드를 명시해주세요.</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-missing">
+        <div class="issue-header">
+          <span class="issue-id">MISSING-003</span>
+          <span class="severity-badge">🟡 누락</span>
+          <span class="impact medium">영향도: Medium</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">Follow-up Sequencing Logic 미정의</div>
+          <div class="doc-ref">
+            <span class="doc-label">근거</span>
+            <span class="doc-name">§4.1 FU No 컬럼 비고</span>
+            <blockquote class="original-text">"Follow-up Sequencing Logic 적용"</blockquote>
+          </div>
+          <div class="issue-desc">FU No가 어떤 규칙으로 부여되는지 (예: FU 생성 순 증가, 케이스 단위 순번 등) 로직이 이 기획서에 없습니다. 첫 번째 FU는 어떤 번호를 받는지, 재생성 시 어떻게 처리되는지 불명확합니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> Follow-up Sequencing Logic을 기획서 본문에 포함하거나 별도 문서를 링크 + 내용 요약을 제공해주세요.</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-missing">
+        <div class="issue-header">
+          <span class="issue-id">MISSING-004</span>
+          <span class="severity-badge">🟡 누락</span>
+          <span class="impact medium">영향도: Medium</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">에러 케이스 및 에러 메시지 전무</div>
+          <div class="doc-ref">
+            <span class="doc-label">근거</span>
+            <span class="doc-name">§5 기능 설명 전반</span>
+            <blockquote class="original-text">기능 설명이 정상 흐름(Happy Path)만 기술됨</blockquote>
+          </div>
+          <div class="issue-desc">XML Import 실패, Follow-up 생성 시 Case Edit 자동 연결 실패, 검색 결과 없음, 그리드 데이터 로드 실패 등 오류 케이스에 대한 동작 및 에러 메시지가 전혀 정의되지 않았습니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> 각 기능별 주요 실패 케이스와 에러 메시지 문구를 기획서에 추가해주세요. QA가 Negative TC를 작성할 수 있어야 합니다.</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-missing">
+        <div class="issue-header">
+          <span class="issue-id">MISSING-005</span>
+          <span class="severity-badge">🟡 누락</span>
+          <span class="impact medium">영향도: Medium</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">현재 범위의 권한 분기 미정의 (조회/편집 접근 기준)</div>
+          <div class="doc-ref">
+            <span class="doc-label">근거</span>
+            <span class="doc-name">§2.3 권한 제어</span>
+            <blockquote class="original-text">"§2.3 권한 제어 [추후 개발]" — 일반 사용자: 본인 할당 사례만 편집 / Admin: 재배정 가능</blockquote>
+          </div>
+          <div class="issue-desc">§2.3이 [추후 개발]이지만 현재 Tracker 그리드에서 "타인이 생성한 사례를 일반 사용자가 조회할 수 있는가?", "타인의 사례를 Edit할 수 있는가?" 등 현재 범위 내의 기본 접근 제어 기준이 정의되지 않았습니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> 추후 개발 이전 현재 버전에서의 기본 접근 정책(예: 전체 조회 가능, 편집은 본인 사례만 등)을 명시해주세요.</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-missing">
+        <div class="issue-header">
+          <span class="issue-id">MISSING-006</span>
+          <span class="severity-badge">🟡 누락</span>
+          <span class="impact low">영향도: Low</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">그리드 기본 정렬 순서 미정의</div>
+          <div class="doc-ref">
+            <span class="doc-label">근거</span>
+            <span class="doc-name">§4.1 그리드 컬럼 목록</span>
+            <blockquote class="original-text">Day0만 정렬 옵션 명시 ("정렬"). 다른 컬럼 및 초기 로드 시 정렬 기준 없음.</blockquote>
+          </div>
+          <div class="issue-desc">Tracker 그리드 초기 진입 시 기본 정렬 기준 (예: 최근 생성일 내림차순)이 정의되지 않았습니다. 사용자가 필터/검색 초기화 시 어떤 순서로 돌아가는지도 불명확합니다.</div>
+          <div class="action-box"><strong>권장 조치:</strong> 기본 정렬 컬럼과 방향을 명시해주세요. (예: Day0 내림차순)</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 확인 필요 -->
+    <section id="confirm">
+      <div class="section-title">🔵 확인 필요 (Confirmation Required) — 5건</div>
+
+      <div class="issue-card severity-confirm">
+        <div class="issue-header">
+          <span class="issue-id">CONFIRM-001</span>
+          <span class="severity-badge">🔵 확인 필요</span>
+          <span class="impact high">영향도: High</span>
+          <span class="tc-block">⛔ TC 작성 보류</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">FU No Amend/Null 표시가 현재 구현 범위인지 확인 필요</div>
+          <div class="issue-desc"><strong>질문:</strong> §4.1의 FU No 컬럼에 "수정/무효화 시 Amend/Null 표시"가 현재 스프린트 구현 범위인가요, 아니면 §2.1의 Void/Nullify [추후 예정]과 함께 추후 구현인가요?</div>
+          <div class="action-box"><strong>TC 영향:</strong> 현재 범위이면 FU No 상태값 TC를 작성합니다. 추후이면 TC 작성을 보류합니다. 상태: 미해결</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-confirm">
+        <div class="issue-header">
+          <span class="issue-id">CONFIRM-002</span>
+          <span class="severity-badge">🔵 확인 필요</span>
+          <span class="impact high">영향도: High</span>
+          <span class="tc-block">⛔ TC 작성 보류</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">Submission 상태 생성 조건 — §2.7 로직 없이 TC 설계 불가</div>
+          <div class="issue-desc"><strong>질문:</strong> Status의 "Submission" 상태는 "보고 대상이어야만 생김"이라고 정의되어 있습니다. 이 "보고 대상" 판단이 §2.7 MFDS 보고 기한 로직에 기반한다면, §2.7 로직 확인 전까지 Submission 상태 전이 TC를 작성할 수 없습니다.</div>
+          <div class="action-box"><strong>TC 영향:</strong> §2.7 문서 접근 후 TC 작성 가능. 상태: 미해결</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-confirm">
+        <div class="issue-header">
+          <span class="issue-id">CONFIRM-003</span>
+          <span class="severity-badge">🔵 확인 필요</span>
+          <span class="impact medium">영향도: Medium</span>
+          <span class="tc-ref">참고용</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">MedDRA coded Term 현재 표시 방식</div>
+          <div class="issue-desc"><strong>질문:</strong> "펼치기/접기 UI 제공 (추후)"라고 명시되어 있습니다. 현재 버전에서는 MedDRA coded Term이 어떻게 표시되나요? (예: 전체 표시 / 첫 번째 항목만 / 생략 텍스트) MedDRA가 여러 개일 경우의 표시 방식을 알아야 TC Expected Result를 작성할 수 있습니다.</div>
+          <div class="action-box"><strong>TC 영향:</strong> 참고용. 표시 방식 확정 후 Expected Result 보완 가능. 상태: 미해결</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-confirm">
+        <div class="issue-header">
+          <span class="issue-id">CONFIRM-004</span>
+          <span class="severity-badge">🔵 확인 필요</span>
+          <span class="impact medium">영향도: Medium</span>
+          <span class="tc-ref">참고용</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">RA Due "Day-N" 표시 범위 (N의 최대값)</div>
+          <div class="issue-desc"><strong>질문:</strong> "Day-N 선택 시 Day-1부터 해당하는 케이스 전부 표시"라고 되어 있습니다. 마감일이 1년 후인 케이스도 "Day-365"로 표시되나요? N에 상한선이 있나요? 이 정보는 BVA 경계값 TC 설계에 필요합니다.</div>
+          <div class="action-box"><strong>TC 영향:</strong> 참고용 (BVA TC 설계 시 경계값). 상태: 미해결</div>
+        </div>
+      </div>
+
+      <div class="issue-card severity-confirm">
+        <div class="issue-header">
+          <span class="issue-id">CONFIRM-005</span>
+          <span class="severity-badge">🔵 확인 필요</span>
+          <span class="impact medium">영향도: Medium</span>
+          <span class="tc-ref">참고용</span>
+        </div>
+        <div class="issue-body">
+          <div class="issue-title">Date Range 필터 2개의 동시 적용 조건</div>
+          <div class="issue-desc"><strong>질문:</strong> §5-1 제안 구조에 "Date Range (RA Due)"와 "Date Range (Calendar Picker: Day0)" 두 개의 날짜 필터가 있습니다. 두 필터를 동시에 적용하면 AND 조건으로 동작하나요? 각 필터의 적용 범위(단일 날짜 vs 기간)와 상호작용 방식을 확인해주세요.</div>
+          <div class="action-box"><strong>TC 영향:</strong> 참고용 (복합 필터 TC 설계 시 AND/OR 조건). 상태: 미해결</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 테스트 포인트 -->
+    <section id="testpoints">
+      <div class="section-title">📋 QA 테스트 포인트 — 기능 분해 매트릭스</div>
+      <table class="test-matrix">
+        <tr>
+          <th>기능 영역</th>
+          <th>테스트 포인트</th>
+          <th>우선순위</th>
+          <th>설계 기법</th>
+          <th>TC 유형</th>
+        </tr>
+        <tr>
+          <td><strong>그리드 초기 로드</strong></td>
+          <td>전체 컬럼 표시, 기본 정렬 순서, 빈 데이터 상태(Empty State)</td>
+          <td><span class="priority-high">High</span></td>
+          <td>EP</td>
+          <td><span class="tc-type-tag">Functional</span></td>
+        </tr>
+        <tr>
+          <td><strong>신규 사례 생성 (Manual)</strong></td>
+          <td>생성 버튼 클릭 → Case Edit 이동, Assignee 자동 배정(생성자), Owner 자동 설정</td>
+          <td><span class="priority-high">High</span></td>
+          <td>ST</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Negative</span></td>
+        </tr>
+        <tr>
+          <td><strong>XML Import</strong></td>
+          <td>XML Import 버튼 → Data-hub XML Import 화면 이동, 이동 후 Tracker 복귀</td>
+          <td><span class="priority-medium">Medium</span></td>
+          <td>ST</td>
+          <td><span class="tc-type-tag">Functional</span></td>
+        </tr>
+        <tr>
+          <td><strong>Follow-up 생성</strong></td>
+          <td>Case ID 우클릭 → Follow-Up 선택 → Case Edit 자동 연결 (기존 데이터 로드), FU No 부여</td>
+          <td><span class="priority-high">High</span></td>
+          <td>ST, DT</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Negative</span></td>
+        </tr>
+        <tr>
+          <td><strong>Case ID 컬럼</strong></td>
+          <td>C.1.1 리포트번호 표시, 클릭 시 Case Edit 이동 여부</td>
+          <td><span class="priority-medium">Medium</span></td>
+          <td>EP</td>
+          <td><span class="tc-type-tag">Functional</span></td>
+        </tr>
+        <tr>
+          <td><strong>Country 컬럼</strong></td>
+          <td>C.2.r.3 존재 시 표시, C.2.r.3 누락 시 E.i.9 대체 표시, 둘 다 없을 경우</td>
+          <td><span class="priority-high">High</span></td>
+          <td>DT, EP</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Negative</span></td>
+        </tr>
+        <tr>
+          <td><strong>Report Type 컬럼</strong></td>
+          <td>C.1.3 값별 표시 (Spontaneous/Study/Other/Unknown), Study일 때 출력값 검증</td>
+          <td><span class="priority-high">High</span></td>
+          <td>EP, DT</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Boundary</span></td>
+        </tr>
+        <tr>
+          <td><strong>AE Type 컬럼</strong><br><small style="color:#dc3545">⛔ 로직 확인 후</small></td>
+          <td>6개 분류값 (SUSAR사망/SUSAR기타/SADR/ADR/AE/Unclassifiable) 자동 분류 정확성</td>
+          <td><span class="priority-high">High</span></td>
+          <td>DT, EP</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Boundary</span></td>
+        </tr>
+        <tr>
+          <td><strong>RA Due 컬럼</strong><br><small style="color:#dc3545">⛔ §2.7 로직 확인 후</small></td>
+          <td>6개 상태 (Day-N/D-Day/Missing/On Time/Overdue/NA) 계산 정확성, 날짜 경계값</td>
+          <td><span class="priority-high">High</span></td>
+          <td>BVA, DT</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Boundary</span><span class="tc-type-tag">Negative</span></td>
+        </tr>
+        <tr>
+          <td><strong>Status 컬럼</strong></td>
+          <td>상태값 7개 표시, Submission 조건부 생성, 필터링 옵션 표시</td>
+          <td><span class="priority-high">High</span></td>
+          <td>ST, DT</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Negative</span></td>
+        </tr>
+        <tr>
+          <td><strong>Assignee/Owner 컬럼</strong></td>
+          <td>Owner = 생성자 자동 설정, Assignee = 생성자 자동 배정, 사용자 이름 표시</td>
+          <td><span class="priority-medium">Medium</span></td>
+          <td>EP</td>
+          <td><span class="tc-type-tag">Functional</span></td>
+        </tr>
+        <tr>
+          <td><strong>Case ID 검색</strong></td>
+          <td>정확한 Case ID 검색, 일부 일치 여부, 결과 없음 처리</td>
+          <td><span class="priority-medium">Medium</span></td>
+          <td>EP, BVA</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Negative</span></td>
+        </tr>
+        <tr>
+          <td><strong>Date Range 필터</strong></td>
+          <td>RA Due 기준 날짜 범위, Day0 기준 날짜 범위, 두 필터 동시 적용</td>
+          <td><span class="priority-medium">Medium</span></td>
+          <td>BVA, DT</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Boundary</span></td>
+        </tr>
+        <tr>
+          <td><strong>컬럼 필터링</strong></td>
+          <td>각 컬럼별 필터링 옵션 동작, 다중 필터 조합, 필터 초기화</td>
+          <td><span class="priority-medium">Medium</span></td>
+          <td>EP, DT</td>
+          <td><span class="tc-type-tag">Functional</span><span class="tc-type-tag">Negative</span></td>
+        </tr>
+      </table>
+    </section>
+
+    <!-- 엣지 케이스 -->
+    <section id="edgecases">
+      <div class="section-title">⚡ 엣지 케이스</div>
+      <div class="edge-list">
+        <h4>경계값 / 상태 전이</h4>
+        <ul>
+          <li>RA Due: D-Day 당일 (Today = D-Day) 표시값 정확성</li>
+          <li>RA Due: Overdue이지만 Submission Date가 D-Day와 동일한 날인 경우 (On Time 경계)</li>
+          <li>RA Due: Submission Date가 없고 D-Day 초과인 경우 → Missing 처리</li>
+          <li>FU No: 동일 원본 케이스에서 FU를 연속으로 2회 이상 생성 시 번호 순서</li>
+          <li>Country: C.2.r.3과 E.i.9 모두 없는 케이스의 Country 컬럼 표시</li>
+          <li>Report Type: C.1.3이 4(Unknown)인 케이스의 표시값</li>
+        </ul>
+        <h4 style="margin-top:14px;">권한 / 동시성</h4>
+        <ul>
+          <li>두 사용자가 동일 케이스를 동시에 Edit 요청하는 경우</li>
+          <li>Case Edit 중 다른 사용자가 같은 케이스의 FU 생성을 시도하는 경우</li>
+          <li>검색 결과가 0건인 상태에서 필터 추가 적용</li>
+        </ul>
+        <h4 style="margin-top:14px;">외부 연동</h4>
+        <ul>
+          <li>XML Import 도중 Data-hub 화면 이동 실패 시 Tracker 상태</li>
+          <li>AE Type 분류 로직 실행 실패 시 컬럼 표시값 (Unclassifiable? 빈값?)</li>
+          <li>MedDRA coded Term이 없는 케이스의 해당 컬럼 표시</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 유저 스토리 -->
+    <section id="userstory">
+      <div class="section-title">👤 유저 스토리 (역할별 시나리오)</div>
+
+      <div class="user-story">
+        <div class="story-header">
+          <span class="role-badge">Case Processor</span>
+          <span class="story-goal">목표: 신규 이상사례 수동 인입 및 우선순위 파악</span>
+        </div>
+        <div class="domain-note">PV 도메인: AE Type 자동 분류 → SUSAR(사망/치명적) 케이스는 7일 이내 보고 의무 (ICH E2A). RA Due가 Day-7 이하이면 즉시 처리 필요.</div>
+        <div class="flow-steps">
+          <div class="flow-step"><span class="step-no">①</span><span class="flow-label happy">정상</span>Tracker 접속 → "+ New Case (Manual Intake)" 클릭 → Case Edit 이동 → 데이터 입력 → 저장 → Tracker로 복귀 → 신규 케이스 그리드 표시 확인, AE Type·RA Due 자동 계산 확인</div>
+          <div class="flow-step"><span class="step-no">②</span><span class="flow-label alt">대안</span>Case Edit 중 저장하지 않고 Tracker로 복귀 → 케이스 생성되지 않음 확인</div>
+          <div class="flow-step"><span class="step-no">③</span><span class="flow-label error">오류</span>+ New Case 클릭 후 Case Edit 화면 로드 실패 → Tracker에 미완성 케이스 생성 여부 확인 및 에러 처리</div>
+        </div>
+      </div>
+
+      <div class="user-story">
+        <div class="story-header">
+          <span class="role-badge">Case Processor</span>
+          <span class="story-goal">목표: 기존 케이스의 후속 보고(Follow-up) 생성</span>
+        </div>
+        <div class="flow-steps">
+          <div class="flow-step"><span class="step-no">①</span><span class="flow-label happy">정상</span>Tracker 그리드에서 원본 케이스 Case ID 우클릭 → "Follow-Up" 선택 → Case Edit 이동 (기존 데이터 로드 확인) → FU 데이터 입력 → 저장 → Tracker 복귀 → FU No 증가 확인</div>
+          <div class="flow-step"><span class="step-no">②</span><span class="flow-label alt">대안</span>이미 FU가 있는 케이스에서 추가 FU 생성 → FU No 순번 정확성 확인</div>
+          <div class="flow-step"><span class="step-no">③</span><span class="flow-label error">오류</span>Case Edit 자동 연결(기존 데이터 로드) 실패 시 → 에러 처리 및 원본 데이터 보호 확인</div>
+        </div>
+      </div>
+
+      <div class="user-story">
+        <div class="story-header">
+          <span class="role-badge">Safety Officer / PV Manager</span>
+          <span class="story-goal">목표: RA Due 기준으로 보고 마감 임박 케이스 파악</span>
+        </div>
+        <div class="domain-note">PV 도메인: MFDS 보고 기한은 AE Type에 따라 7일/15일/30일로 다름. RA Due 필터로 Day-1~Day-3 케이스를 즉시 식별해야 함.</div>
+        <div class="flow-steps">
+          <div class="flow-step"><span class="step-no">①</span><span class="flow-label happy">정상</span>Tracker 접속 → RA Due 필터에서 "Day-N" 선택 → Day-1~Day-N 케이스만 필터링 → AE Type·Assignee 확인 → 긴급 케이스 우선 처리</div>
+          <div class="flow-step"><span class="step-no">②</span><span class="flow-label alt">대안</span>Date Range (RA Due) 필터와 AE Type 필터 동시 적용 → SUSAR 케이스만 마감 기준으로 필터링</div>
+          <div class="flow-step"><span class="step-no">③</span><span class="flow-label error">오류</span>RA Due = Missing인 케이스 다수 존재 → Submission Date 누락 케이스 일괄 파악</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RTM v0 미리보기 -->
+    <section id="rtm">
+      <div class="section-title">📊 RTM v0 — 요구사항 추출 결과</div>
+      <p style="margin-bottom:12px;font-size:0.85rem;color:#6c757d;">검증 대상 24건 / 제외(추후/TBD) 7건 / 총 31건. 상세 RTM: Safety1.0/agent_output/rtm/Tracker_RTM.md</p>
+      <table class="rtm-table">
+        <tr>
+          <th>REQ_Id</th>
+          <th>요구사항 내용</th>
+          <th>유형</th>
+          <th>출처</th>
+          <th>제외여부</th>
+          <th>상태</th>
+        </tr>
+        <tr><td>REQ-001</td><td>Tracker 그리드 15개 컬럼 표시</td><td>기능명세</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-002</td><td>Case ID 컬럼 — C.1.1 리포트번호 매핑</td><td>데이터규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-003</td><td>Worldwide Unique Case Identification — C.1.8.1 매핑</td><td>데이터규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-004</td><td>Day0 — C.1.5 매핑, 정렬 지원</td><td>데이터규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-005</td><td>FU No — Follow-up Sequencing Logic 적용, Amend/Null 필터링</td><td>비즈니스규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-006</td><td>Country — C.2.r.3 표시, 누락 시 E.i.9 대체, KR/US 필터</td><td>비즈니스규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-007</td><td>Report Type — C.1.3 값 표시, Study일 때 특수 출력 로직</td><td>비즈니스규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-008</td><td>Reported Product — G.k.2.2 매핑</td><td>데이터규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-009</td><td>Product — 내부 DRUG Key 코딩 품목명, 필터링</td><td>데이터규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-010</td><td>Reported AE — E.i.1.2 매핑</td><td>데이터규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-011</td><td>MedDRA coded Term — E.i.2.1b 매핑</td><td>데이터규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-012</td><td>AE Type — 분류 로직 자동 적용, 6개 분류값, 필터링</td><td>비즈니스규칙</td><td>§2.6/§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-013</td><td>RA Due — 6개 상태 자동 계산 (Day-N/D-Day/Missing/On Time/Overdue/NA)</td><td>비즈니스규칙</td><td>§2.7/§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-014</td><td>Status — 7개 상태값 표시, Submission 조건부 생성, 필터링</td><td>상태전이</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-015</td><td>Assignee — 생성자 자동 배정, 필터링</td><td>비즈니스규칙</td><td>§2.2/§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-016</td><td>Owner — 케이스 최초 생성 User 자동 기록, 필터링</td><td>데이터규칙</td><td>§4.1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-017</td><td>신규 사례 생성 (Manual Intake) — 버튼 클릭 → Case Edit 이동</td><td>기능명세</td><td>§2.1/§5</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-018</td><td>XML Import — Data-hub XML Import 화면으로 이동</td><td>기능명세</td><td>§5</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-019</td><td>Follow-up 생성 — Case ID 우클릭 → FU 생성 → Case Edit 자동 연결 (기존 데이터 로드)</td><td>기능명세</td><td>§2.1/§5</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-020</td><td>Case Edit 이동 — 기존 사례 데이터 편집</td><td>기능명세</td><td>§5</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-021</td><td>다중 필터링 — 그리드 컬럼별 필터</td><td>기능명세</td><td>§2.4/§5</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-022</td><td>Date Range 필터 (RA Due 기준)</td><td>기능명세</td><td>§5-1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-023</td><td>Date Range 필터 (Day0 기준)</td><td>기능명세</td><td>§5-1</td><td>-</td><td>미매핑</td></tr>
+        <tr><td>REQ-024</td><td>Case ID / WUCID 검색</td><td>기능명세</td><td>§5</td><td>-</td><td>미매핑</td></tr>
+        <!-- 제외 항목 -->
+        <tr class="excluded"><td>REQ-EX-001</td><td>삭제(Void/Nullify) 기능</td><td>기능명세</td><td>§2.1</td><td><span class="rtm-badge tbd">추후 예정</span></td><td>제외</td></tr>
+        <tr class="excluded"><td>REQ-EX-002</td><td>보관(Archive) 기능</td><td>기능명세</td><td>§2.1</td><td><span class="rtm-badge tbd">추후 예정</span></td><td>제외</td></tr>
+        <tr class="excluded"><td>REQ-EX-003</td><td>담당자 재배정 (Admin 권한)</td><td>기능명세</td><td>§2.2</td><td><span class="rtm-badge tbd">추후 고도화</span></td><td>제외</td></tr>
+        <tr class="excluded"><td>REQ-EX-004</td><td>권한 제어 전체 (일반/Admin 역할 분리)</td><td>권한/역할</td><td>§2.3</td><td><span class="rtm-badge tbd">추후 개발</span></td><td>제외</td></tr>
+        <tr class="excluded"><td>REQ-EX-005</td><td>MedDRA coded Term 펼치기/접기 UI</td><td>기능명세</td><td>§4.1</td><td><span class="rtm-badge tbd">추후</span></td><td>제외</td></tr>
+        <tr class="excluded"><td>REQ-EX-006</td><td>Excel 내보내기</td><td>기능명세</td><td>§2.4</td><td><span class="rtm-badge tbd">추후 개발</span></td><td>제외</td></tr>
+        <tr class="excluded"><td>REQ-EX-007</td><td>의약품 정보 매칭 (Partial Match 기반 분류)</td><td>기능명세</td><td>§3</td><td><span class="rtm-badge tbd">Enhancement(추후)</span></td><td>제외</td></tr>
+      </table>
+      <p style="margin-top:10px;font-size:0.8rem;color:#6c757d;">* 회색 행: 제외(추후/TBD) 항목. 상세 RTM 파일: Safety1.0/agent_output/rtm/Tracker_RTM.md</p>
+    </section>
+
+  </div>
+</div>
+</div>
+
+<script>
+// 사이드바 스크롤 하이라이트
+const sections = document.querySelectorAll('section[id]');
+const sidebarLinks = document.querySelectorAll('.sidebar-item');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => { if (window.scrollY >= s.offsetTop - 80) current = s.id; });
+  sidebarLinks.forEach(l => {
+    l.style.borderLeftColor = 'transparent';
+    l.style.color = 'rgba(255,255,255,0.65)';
+    if (l.getAttribute('href') === '#' + current) {
+      l.style.borderLeftColor = '#4a9eff';
+      l.style.color = 'white';
+    }
+  });
+});
+</script>
+</body>
+</html>

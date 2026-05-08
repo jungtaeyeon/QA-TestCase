@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Design QA Report - Default Rule</title>
+  <style>
+    :root {
+      --critical: #dc3545;
+      --major: #fd7e14;
+      --minor: #ffc107;
+      --info: #17a2b8;
+      --ok: #28a745;
+    }
+    body { font-family: 'Pretendard', -apple-system, 'Segoe UI', sans-serif; margin: 0; padding: 20px; background: #f5f5f5; color: #333; line-height: 1.6; }
+    .report-container { max-width: 1400px; margin: 0 auto; }
+    .header { background: #1a1a2e; color: white; padding: 30px; border-radius: 12px; margin-bottom: 24px; }
+    .header h1 { margin: 0; font-size: 1.8rem; }
+    .header p { margin: 8px 0 0; opacity: 0.8; font-size: 0.95rem; }
+    .meta-info { display: flex; gap: 24px; margin-top: 16px; font-size: 0.85rem; color: rgba(255,255,255,0.7); flex-wrap: wrap; }
+    .summary-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 24px; }
+    .card { background: white; border-radius: 8px; padding: 20px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card.critical { border-top: 4px solid var(--critical); }
+    .card.major { border-top: 4px solid var(--major); }
+    .card.minor { border-top: 4px solid var(--minor); }
+    .card.info { border-top: 4px solid var(--info); }
+    .card.ok { border-top: 4px solid var(--ok); }
+    .card .count { font-size: 2.5rem; font-weight: bold; }
+    .card .label { font-size: 0.9rem; margin-top: 4px; color: #666; }
+    .issue-section { background: white; border-radius: 12px; margin-bottom: 24px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .section-header { padding: 16px 24px; font-weight: 600; font-size: 1.1rem; border-bottom: 1px solid #eee; }
+    .section-header.critical { background: #fee; color: var(--critical); }
+    .section-header.major { background: #fff3e0; color: #e65100; }
+    .section-header.minor { background: #fff8e1; color: #856404; }
+    .section-header.info { background: #e3f2fd; color: var(--info); }
+    .section-header.ok { background: #e8f5e9; color: var(--ok); }
+    .issue-item { display: grid; grid-template-columns: 1fr 1fr 120px; gap: 24px; padding: 20px 24px; border-bottom: 1px solid #f0f0f0; align-items: start; }
+    .issue-item:last-child { border-bottom: none; }
+    .spec-col h4, .design-col h4 { margin: 0 0 12px 0; font-size: 0.8rem; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+    .spec-content, .design-content { background: #f8f9fa; padding: 16px; border-radius: 8px; font-size: 0.9rem; }
+    .spec-content strong, .design-content strong { color: #333; }
+    .source { margin-top: 10px; font-size: 0.8rem; color: #888; border-top: 1px solid #e0e0e0; padding-top: 8px; }
+    .action-tag { display: inline-block; padding: 4px 12px; border-radius: 4px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+    .action-tag.add { background: #d4edda; color: #155724; }
+    .action-tag.fix { background: #f8d7da; color: #721c24; }
+    .action-tag.verify { background: #fff3cd; color: #856404; }
+    .action-tag.review { background: #cce5ff; color: #004085; }
+    .issue-num { font-weight: 700; color: #666; font-size: 0.85rem; margin-bottom: 8px; }
+    .match-section { background: white; border-radius: 12px; margin-bottom: 24px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .match-list { padding: 16px 24px; }
+    .match-item { padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+    .match-item:last-child { border-bottom: none; }
+    .check-icon { color: var(--ok); font-weight: bold; }
+    .highlight { background: #fff3cd; padding: 2px 4px; border-radius: 3px; font-weight: 600; }
+    .diff-old { background: #fdd; text-decoration: line-through; padding: 2px 4px; border-radius: 3px; }
+    .diff-new { background: #dfd; padding: 2px 4px; border-radius: 3px; }
+    @media (max-width: 900px) {
+      .summary-cards { grid-template-columns: repeat(3, 1fr); }
+      .issue-item { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="report-container">
+    <header class="header">
+      <h1>🔍 Design QA Report</h1>
+      <p>기획서: default-rule.md (ICSR Config > Default Rule) | Figma: iVigilance Square</p>
+      <div class="meta-info">
+        <span>📅 생성일: 2026-04-14</span>
+        <span>📄 기획서 버전: v1.0.260402</span>
+        <span>🎨 Figma Node: 18026:16302</span>
+        <span>📂 기획서: plan/00-common/00-common/configuration/icsr-config/default-rule.md</span>
+      </div>
+    </header>
+
+    <!-- 요약 카드 -->
+    <div class="summary-cards">
+      <div class="card critical">
+        <div class="count" style="color: var(--critical);">3</div>
+        <div class="label">🔴 누락</div>
+      </div>
+      <div class="card major">
+        <div class="count" style="color: var(--major);">3</div>
+        <div class="label">🟠 불일치</div>
+      </div>
+      <div class="card minor">
+        <div class="count" style="color: var(--minor);">3</div>
+        <div class="label">🟡 명세 미반영</div>
+      </div>
+      <div class="card info">
+        <div class="count" style="color: var(--info);">1</div>
+        <div class="label">🔵 디자인 전용</div>
+      </div>
+      <div class="card ok">
+        <div class="count" style="color: var(--ok);">10</div>
+        <div class="label">✅ 일치</div>
+      </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 🔴 누락 (Missing) -->
+    <!-- ============================================================ -->
+    <section class="issue-section">
+      <div class="section-header critical">🔴 누락 (Missing) — 기획서에 명시되었으나 디자인에 없음</div>
+
+      <!-- Issue 1 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#1</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>Case ID 만료 경고 팝업 디자인 누락</strong>
+            <p>기획서에 따르면 일련번호가 최대치에 도달하기 전 <strong>남은 번호가 200개 이하</strong>일 때 팝업을 노출해야 합니다.</p>
+            <ul>
+              <li>팝업 내용: "현재 마지막으로 부여된 케이스 ID는 [Case ID]입니다. 최대 자릿수[Case ID 최대값]에 도달하면 번호 체계가 자동으로 확장되어..."</li>
+              <li><strong>[Confirm]</strong> 클릭: 닫히지만 다음 로그인 시 재노출</li>
+              <li><strong>[Do not show again]</strong> 체크 후 [Confirm]: 더 이상 미노출</li>
+              <li>자릿수 초과 후 새 체계 진입 시 자동 미노출</li>
+            </ul>
+            <div class="source">📌 출처: 기획서 &gt; "Case ID 만료 경고 및 자동 자릿수 확장" &gt; "팝업 노출 조건" 및 "사용자 인터랙션 및 제어" 섹션</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>해당 팝업/모달 디자인이 존재하지 않음</strong>
+            <p>전체 Figma 섹션(ICSR Config > Default Rule) 내에서 만료 경고 팝업, [Confirm] 버튼, [Do not show again] 체크박스 등의 컴포넌트를 확인할 수 없습니다.</p>
+            <p>화면 기본 구성, 컴포넌트 요소들, Flow 섹션 모두에서 누락되었습니다.</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag add">➕ 추가 필요</span>
+        </div>
+      </div>
+
+      <!-- Issue 2 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#2</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>C.1.1, C.1.8.1 동일 입력(Sync) 설정 UI 누락</strong>
+            <p>기획서에 "C.1.8.1이 없을 때 C.1.1 값을 그대로 사용" 하는 동기화 설정이 정의되어 있습니다.</p>
+            <ul>
+              <li>C.1.8.1 값 Null인 경우 → C.1.1 번호를 C.1.8.1에 복사</li>
+              <li>Sync 여부에 따른 동작 분기 (값 없는 경우 Sync / 개별 관리)</li>
+              <li>유지 설정 + Sync 설정의 조합에 따른 동작 매트릭스 제공</li>
+            </ul>
+            <div class="source">📌 출처: 기획서 &gt; "C.1.1, C.1.8.1 동일 입력 설정" 및 "값 유지 선택 및 동기화에 따른 동작 설명" 섹션</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>Sync 설정 관련 UI 요소가 존재하지 않음</strong>
+            <p>Import Settings Card에는 A/B 옵션(C.1.1 신규 부여 vs 모두 유지)만 존재하고, 별도의 Sync 설정 토글/라디오/체크박스가 없습니다.</p>
+            <p>기획서의 Sync 동작 매트릭스에 대한 설정 UI가 디자인에 반영되지 않았습니다.</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag add">➕ 추가 필요</span>
+        </div>
+      </div>
+
+      <!-- Issue 3 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#3</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>Case Edit 화면 — C.1.1 동작(수정 버튼, 잠금 상태) 디자인 누락</strong>
+            <p>기획서 "Case Edit에서 동작" 섹션에 아래 UI 요구사항이 명시되어 있습니다:</p>
+            <ul>
+              <li>C.1.1은 기본으로 <strong>수정 불가</strong></li>
+              <li><strong>수정 버튼</strong> 클릭 시 얼럿: "수동으로 변경하면, 국가코드 및 보고서 타입 변경 사항이 자동으로 보고자 관리번호에 반영되지 않습니다."</li>
+              <li>Confirm → 수동 수정 전환 (Sync 해제)</li>
+              <li>Cancel → 자동 상태 유지</li>
+              <li><strong>Approval 상태 이후</strong>: 수정 버튼 비표시, 안내 문구 노출</li>
+            </ul>
+            <div class="source">📌 출처: 기획서 &gt; "Case Edit에서 동작" &gt; "C.1.1 동작 설정" 및 "C.1.1 변경 시점" 섹션</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>Case Edit 관련 화면/컴포넌트가 존재하지 않음</strong>
+            <p>현재 Figma 섹션(ICSR Config > Default Rule)은 Admin 설정 화면만 포함하고 있으며, Case Edit 화면에서의 C.1.1 수정 버튼, 얼럿 다이얼로그, Approval 후 잠금 상태 등의 디자인이 없습니다.</p>
+            <p style="color: #888; font-size: 0.85rem;">※ 별도 Figma 페이지에 존재할 수 있으므로 확인 필요</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag add">➕ 추가 필요</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 🟠 불일치 (Mismatch) -->
+    <!-- ============================================================ -->
+    <section class="issue-section">
+      <div class="section-header major">🟠 불일치 (Mismatch) — 기획서와 디자인이 다름</div>
+
+      <!-- Issue 4 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#4</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>Year 설정 안내 문구 — "N/A 선택 시" vs "미선택 시"</strong>
+            <p>기획서에 정의된 툴팁 문구:</p>
+            <p>"연도 선택 시 매년 초, 연월 선택 시 매월 초에 일련번호가 '00001'로 초기화됩니다. <span class="highlight">N/A 선택 시</span> 초기화 없이 번호가 계속 누적됩니다."</p>
+            <div class="source">📌 출처: 기획서 &gt; "Year (연도 표시 및 리셋 정책)" &gt; 툴팁 제공 항목</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>표현이 다름</strong>
+            <p>Figma의 Info Banner 텍스트:</p>
+            <p>"연도 선택 시 매년 초, 연월 선택 시 매월 초에 일련번호가 '00001'로 초기화됩니다. <span class="highlight">미선택 시</span> 초기화 없이 번호가 계속 누적됩니다."</p>
+            <p style="margin-top: 8px;">
+              <span class="diff-old">N/A 선택 시</span> → <span class="diff-new">미선택 시</span>
+            </p>
+            <p style="font-size: 0.85rem; color: #888;">N/A는 명확한 선택 옵션인데 "미선택"으로 표현하면 사용자가 "아무것도 안 고른 상태"로 오해할 수 있음</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag fix">🔧 수정 필요</span>
+        </div>
+      </div>
+
+      <!-- Issue 5 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#5</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>Type of Report — "Not Available to Sender(Unknown)" 레이블 축약</strong>
+            <p>기획서 코드 매핑 로직:</p>
+            <ul>
+              <li>Spontaneous → SP</li>
+              <li>Report from Study → RS</li>
+              <li>Other → OT</li>
+              <li><span class="highlight">Not Available to Sender(Unknown)</span> → UN</li>
+            </ul>
+            <div class="source">📌 출처: 기획서 &gt; "Type of Report (보고 구분) 추가" &gt; 코드 매핑 로직</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>레이블이 "Unknown"으로 축약됨</strong>
+            <p>Figma의 Badge 텍스트에서 4번째 항목:</p>
+            <p><span class="diff-old">Not Available to Sender(Unknown)</span> → <span class="diff-new">Unknown</span> → UN</p>
+            <p style="font-size: 0.85rem; color: #888;">E2B R3 규격의 정식 명칭은 "Not Available to Sender(Unknown)"이며, 축약 시 정확한 의미 전달이 어려울 수 있음. 의도적 축약이라면 기획서도 함께 업데이트 필요.</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag fix">🔧 수정 필요</span>
+        </div>
+      </div>
+
+      <!-- Issue 6 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#6</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>Flow 초기 화면에서 Year 라디오 — N/A 옵션 누락</strong>
+            <p>기획서에 Year 설정은 5가지 옵션 (YY, YYYY, YYMM, YYYYMM, <strong>N/A</strong>)이 라디오 버튼으로 제공되어야 합니다.</p>
+            <div class="source">📌 출처: 기획서 &gt; "Year (연도 표시 및 리셋 정책)" — "라디오 버튼으로 5가지 중 한가지 선택 가능"</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>Flow 섹션의 초기 화면에서 라디오 4개만 존재</strong>
+            <p>"👇 Flow는 여기서 확인!" 섹션의 Case ID Rule 화면에서 Year Setting의 Radio Options 프레임에 4개의 라디오 옵션만 배치 (y=0, 44, 88, 132):</p>
+            <ul>
+              <li>YY (eg:26)</li>
+              <li>YYYY (eg:2026)</li>
+              <li>YYMM (eg:2603)</li>
+              <li>YYYYMM (eg:202603)</li>
+            </ul>
+            <p><strong>N/A 옵션이 누락</strong></p>
+            <p style="font-size: 0.85rem; color: #888;">기본 레이아웃 섹션(화면 기본 구성)에는 5개 모두 존재하나, Flow 화면에서는 N/A가 빠져 있음 (레이어 ID: 18026:16632)</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag fix">🔧 수정 필요</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 🟡 명세 미반영 (Spec Gap) -->
+    <!-- ============================================================ -->
+    <section class="issue-section">
+      <div class="section-header minor">🟡 명세 미반영 (Spec Gap) — 세부 명세가 디자인에 반영되지 않음</div>
+
+      <!-- Issue 7 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#7</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>시작 번호 설정 — 안내 문구 상세 예시 누락</strong>
+            <p>기획서에 정의된 표시 문구:</p>
+            <p>"입력한 시작번호부터 보고자 관리번호가 생성됩니다. <strong>예를 들어, 시작 번호를 '25'로 입력하고 자릿수를 '5자리'로 설정하면, 첫 번째 케이스 ID는 '00025'와 같은 형식으로 생성됩니다.</strong>"</p>
+            <div class="source">📌 출처: 기획서 &gt; "시작 번호 설정" &gt; 표시 문구</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>헬퍼 텍스트가 축약됨</strong>
+            <p>Figma의 Starting Number Field 하위 텍스트:</p>
+            <p>"입력 시 시작번호부터 Case ID가 생성됩니다."</p>
+            <p style="margin-top: 8px;">기획서 대비 <strong>예시 문구가 완전히 생략</strong>되었고, "보고자 관리번호"가 "Case ID"로 변경됨</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag verify">⚠️ 확인 필요</span>
+        </div>
+      </div>
+
+      <!-- Issue 8 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#8</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>일련번호 자릿수 선택값 범위 — 기획서 내부 불일치</strong>
+            <p>기획서 본문 (일련번호 자릿수 설정):</p>
+            <p>"선택값: <span class="highlight">3, 4, 5, 6, 7, 8, 9</span> (최대 9자리)"</p>
+            <p>기획서 와이어프레임 (#5):</p>
+            <p>"드롭다운 선택: <span class="highlight">5, 6, 7, 8, 9</span> 중 하나를 선택함."</p>
+            <div class="source">📌 출처: 기획서 &gt; "일련번호 자릿수 설정" 본문 vs 와이어프레임 #5</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>드롭다운의 실제 옵션 목록 확인 불가</strong>
+            <p>Figma에서 Serial Number Setting은 "Vertical Field" 인스턴스(드롭다운)로 구현되어 있으나, 드롭다운 펼침 상태의 옵션 목록이 디자인에 포함되어 있지 않아 정확한 범위 확인 불가.</p>
+            <p style="font-size: 0.85rem; color: #888;">기획서 자체에 본문(3~9)과 와이어프레임(5~9)이 불일치함. 디자인 적용 범위를 기획 측에 확인하고, 드롭다운 옵션 목록을 디자인에 명시 필요.</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag verify">⚠️ 확인 필요</span>
+        </div>
+      </div>
+
+      <!-- Issue 9 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#9</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>일련번호 자릿수 설정 — 구체적 안내 문구 불일치</strong>
+            <p>기획서에 정의된 표시문구:</p>
+            <p>"선택한 예를 들어, 이 값을 5로 설정할 경우 숫자 앞에 0이 붙어 00001, 00002와 같은 <strong>5자리 숫자</strong>로 생성됩니다."</p>
+            <div class="source">📌 출처: 기획서 &gt; "일련번호 자릿수 설정" &gt; 표시문구</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>해당 안내 문구가 디자인에 표시되지 않음</strong>
+            <p>Serial Number Setting 영역에는 드롭다운(자릿수)과 시작 번호 입력란만 존재하며, 기획서에 명시된 자릿수 설명 문구가 별도로 표시되지 않습니다.</p>
+            <p>개발 참고 노트에서는 "자릿수 변경 → 시작번호 placeholder 자동 변경"이라는 동적 동작만 기술되어 있음.</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag verify">⚠️ 확인 필요</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- 🔵 디자인 전용 (Design Only) -->
+    <!-- ============================================================ -->
+    <section class="issue-section">
+      <div class="section-header info">🔵 디자인 전용 (Design Only) — 디자인에만 있고 기획서에 명시 없음</div>
+
+      <!-- Issue 10 -->
+      <div class="issue-item">
+        <div class="spec-col">
+          <div class="issue-num">#10</div>
+          <h4>📋 기획서 명세</h4>
+          <div class="spec-content">
+            <strong>Read Only 상태 (비 Admin 권한) — 기획서에 미정의</strong>
+            <p>기획서에 "비 Admin 사용자의 Read Only 접근"에 대한 명시적 정의가 없습니다.</p>
+            <div class="source">📌 해당 섹션 없음</div>
+          </div>
+        </div>
+        <div class="design-col">
+          <h4>🎨 Figma 현황</h4>
+          <div class="design-content">
+            <strong>Figma 개발 참고 노트에 Read Only 상태 정의</strong>
+            <p>Figma의 "🔧 개발 참고" 프레임에 아래 내용이 기술됨:</p>
+            <ul>
+              <li>테넌트 어드민이 아닌 사용자 → Read Only 상태</li>
+              <li>Segment Builder: 칩 추가/제거/드래그 불가</li>
+              <li>Radio, Dropdown, Input: 선택/입력 불가</li>
+              <li>Footer: 저장/취소 버튼 숨김</li>
+              <li>Preview: 현재 적용 중인 포맷 그대로 표시</li>
+            </ul>
+            <p style="font-size: 0.85rem; color: #888;">유용한 UX 정의이므로 기획서에도 반영하는 것을 권장</p>
+          </div>
+        </div>
+        <div class="action-col">
+          <span class="action-tag review">📝 리뷰 필요</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- ✅ 일치 (Match) -->
+    <!-- ============================================================ -->
+    <section class="match-section">
+      <div class="section-header ok">✅ 일치 — 기획서와 디자인이 일치하는 항목 (10건)</div>
+      <div class="match-list">
+        <div class="match-item"><span class="check-icon">✔</span> <strong>Preview 영역</strong> — 국가코드-조직식별자-구성요소 조합이 실시간 반영되는 상단 고정 프리뷰 구현</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>조직 식별자 입력</strong> — 영문/숫자만, 최소 1자 최대 10자 제한 구현 (에러 메시지 포함)</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>Segment Builder (칩 D&D)</strong> — 연도, 보고 유형, 제품 약어, 자유 텍스트 칩 추가/제거/순서 변경 가능. 일련번호는 필수(제거 불가)</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>Year 설정 — 5개 라디오 옵션</strong> (기본 레이아웃) — YY, YYYY, YYMM, YYYYMM, N/A 모두 존재</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>Type of Report 코드 매핑</strong> — Spontaneous→SP, Report from Study→RS, Other→OT 정상 반영</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>Product Abbreviation 안내 문구</strong> — "Admin의 Product Config에 등록된 제품 약어를 참조합니다. 값이 없으면 UNK으로 표시됩니다." 일치</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>자유 텍스트 입력</strong> — 영문/숫자, 최대 6글자 제한 + 헬퍼 텍스트 구현</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>Import 설정 옵션 A/B</strong> — 옵션 A (C.1.8.1만 유지, 권장 배지), 옵션 B (C.1.1, C.1.8.1 모두 유지) 라디오 카드 구현</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>변경 사항 안내 배너</strong> — "설정을 변경하면 이후 생성되는 케이스부터 적용됩니다. 기존 케이스는 변경되지 않습니다." 상시 노출</div>
+        <div class="match-item"><span class="check-icon">✔</span> <strong>반응형 레이아웃</strong> — W1280, W1440, W1920 세 가지 해상도별 디자인 제공</div>
+      </div>
+    </section>
+
+  </div>
+</body>
+</html>

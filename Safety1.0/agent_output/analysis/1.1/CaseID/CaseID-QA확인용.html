@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA 분석 리포트 — Case ID</title>
+<style>
+:root {
+  --conflict: #dc3545;
+  --expr: #fd7e14;
+  --missing: #ffc107;
+  --confirm: #17a2b8;
+  --ok: #28a745;
+  --bg: #f8f9fa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); }
+.report-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+.sidebar {
+  background: #1a1a2e; padding: 24px 0; position: sticky;
+  top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar-logo { color: white; font-size: 1rem; font-weight: 700; padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-item {
+  display: flex; align-items: center; gap: 8px; padding: 10px 20px;
+  color: rgba(255,255,255,0.7); cursor: pointer; font-size: 0.88rem;
+  border-left: 3px solid transparent; text-decoration: none;
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.08); color: white; border-left-color: #4a9eff; }
+.sidebar-badge {
+  margin-left: auto; background: rgba(255,255,255,0.15);
+  border-radius: 10px; padding: 1px 7px; font-size: 0.75rem;
+}
+.sidebar-badge.has-issue { background: var(--conflict); }
+.sidebar-badge.has-expr { background: var(--expr); }
+.sidebar-badge.has-missing { background: #856404; color: #fff; }
+.sidebar-badge.has-confirm { background: var(--confirm); }
+
+.report-header { background: #1a1a2e; color: white; padding: 32px 40px; }
+.report-header h1 { font-size: 1.6rem; margin-bottom: 8px; }
+.meta { display: flex; gap: 24px; font-size: 0.85rem; color: rgba(255,255,255,0.65); margin-bottom: 20px; flex-wrap: wrap; }
+.issue-cards { display: flex; gap: 14px; flex-wrap: wrap; }
+.card {
+  background: rgba(255,255,255,0.1); border-radius: 10px;
+  padding: 14px 20px; display: flex; align-items: center;
+  gap: 10px; font-size: 0.9rem;
+}
+.card .count { font-size: 1.5rem; font-weight: bold; }
+.card.conflict { border-top: 3px solid var(--conflict); }
+.card.expr { border-top: 3px solid var(--expr); }
+.card.missing { border-top: 3px solid var(--missing); }
+.card.confirm { border-top: 3px solid var(--confirm); }
+.card.block { border-top: 3px solid #6c757d; }
+
+.main-content { padding: 32px 40px; }
+section { margin-bottom: 48px; scroll-margin-top: 20px; }
+.section-title {
+  font-size: 1.15rem; font-weight: 700; margin-bottom: 20px;
+  padding-bottom: 8px; border-bottom: 2px solid #e9ecef;
+  display: flex; align-items: center; gap: 8px;
+}
+.no-issue { background: white; border-radius: 8px; padding: 16px 20px; color: #6c757d; font-size: 0.9rem; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+
+.issue-card {
+  background: white; border-radius: 10px; margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden;
+  border-left: 4px solid transparent;
+}
+.issue-card.severity-conflict { border-left-color: var(--conflict); }
+.issue-card.severity-expr { border-left-color: var(--expr); }
+.issue-card.severity-missing { border-left-color: var(--missing); }
+.issue-card.severity-confirm { border-left-color: var(--confirm); }
+
+.issue-header {
+  display: flex; align-items: center; gap: 10px; padding: 12px 16px;
+  background: #f8f9fa; border-bottom: 1px solid #e9ecef; flex-wrap: wrap;
+}
+.issue-id { font-weight: 700; font-size: 0.85rem; color: #495057; }
+.severity-badge { font-size: 0.8rem; font-weight: 600; }
+.impact { font-size: 0.78rem; padding: 2px 8px; border-radius: 4px; background: #e9ecef; }
+.impact.high { background: #ffe0e0; color: var(--conflict); }
+.impact.medium { background: #fff3cd; color: #856404; }
+.impact.low { background: #d1ecf1; color: #0c5460; }
+.tc-impact.block { font-size: 0.78rem; padding: 2px 8px; border-radius: 4px; background: #f8d7da; color: #721c24; margin-left: auto; }
+
+.issue-body { padding: 16px; }
+.issue-title { font-weight: 600; font-size: 1rem; margin-bottom: 12px; color: #212529; }
+.doc-ref { margin-bottom: 10px; }
+.doc-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6c757d; }
+.doc-name { font-size: 0.85rem; color: #495057; margin-left: 6px; }
+blockquote.original-text {
+  margin: 6px 0 0 0; padding: 8px 12px;
+  background: #f8f9fa; border-left: 3px solid #dee2e6;
+  font-size: 0.88rem; color: #495057; border-radius: 0 4px 4px 0;
+}
+.issue-desc { margin: 12px 0; font-size: 0.92rem; color: #343a40; line-height: 1.6; }
+.action-box {
+  background: #e8f4fd; border: 1px solid #bee5eb;
+  border-radius: 6px; padding: 10px 14px;
+  font-size: 0.88rem; color: #0c5460;
+}
+
+.test-matrix { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+.test-matrix th { background: #343a40; color: white; padding: 10px 12px; text-align: left; }
+.test-matrix td { padding: 9px 12px; border-bottom: 1px solid #e9ecef; vertical-align: top; line-height: 1.5; }
+.test-matrix tr:hover td { background: #f8f9fa; }
+.priority-high { color: var(--conflict); font-weight: 700; }
+.priority-medium { color: #856404; font-weight: 600; }
+.priority-low { color: #6c757d; }
+
+.user-story { background: white; border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.story-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.role-badge { background: #1a1a2e; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; }
+.flow-label { font-weight: 600; font-size: 0.9rem; color: #343a40; }
+.flow-step { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px dashed #e9ecef; font-size: 0.88rem; line-height: 1.5; }
+.flow-step:last-child { border-bottom: none; }
+.step-no { font-weight: 700; color: #4a9eff; min-width: 22px; }
+
+.edge-list { list-style: none; }
+.edge-list li { padding: 7px 12px; border-bottom: 1px solid #e9ecef; font-size: 0.88rem; background: white; }
+.edge-list li:first-child { border-radius: 8px 8px 0 0; }
+.edge-list li:last-child { border-radius: 0 0 8px 8px; border-bottom: none; }
+.edge-list li:hover { background: #f8f9fa; }
+.edge-tag { font-size: 0.75rem; font-weight: 700; padding: 1px 6px; border-radius: 3px; margin-right: 6px; background: #fff9f0; color: var(--expr); border: 1px solid var(--expr); }
+</style>
+</head>
+<body>
+<div class="report-layout">
+
+<!-- 사이드바 -->
+<nav class="sidebar">
+  <div class="sidebar-logo">📋 QA 분석 리포트</div>
+  <a class="sidebar-item" href="#overview">📁 분석 개요</a>
+  <a class="sidebar-item" href="#conflict">🔴 기획 충돌 <span class="sidebar-badge has-issue">2</span></a>
+  <a class="sidebar-item" href="#expr">🟠 표현 불일치 <span class="sidebar-badge has-expr">4</span></a>
+  <a class="sidebar-item" href="#missing">🟡 누락 항목 <span class="sidebar-badge has-missing">10</span></a>
+  <a class="sidebar-item" href="#confirm">🔵 확인 필요 <span class="sidebar-badge has-confirm">6</span></a>
+  <a class="sidebar-item" href="#testpoints">📋 테스트 포인트</a>
+  <a class="sidebar-item" href="#edgecase">⚠️ 엣지 케이스</a>
+  <a class="sidebar-item" href="#userstory">👤 유저 스토리</a>
+  <a class="sidebar-item" href="#rtm">📊 RTM v0 미리보기</a>
+</nav>
+
+<!-- 메인 콘텐츠 -->
+<div>
+<header class="report-header">
+  <h1>📋 QA 분석 리포트 — Case ID</h1>
+  <div class="meta">
+    <span>대상: plan/00. Common (공통 정책)/Admin (Org Admin)/ICSR Config/Case ID/Case ID.md</span>
+    <span>참조: ICSR Config.md (빈 파일)</span>
+    <span>분석일: 2026-05-06</span>
+    <span>기획 최신 버전: v1.0.250427</span>
+  </div>
+  <div class="issue-cards">
+    <div class="card conflict">🔴 충돌 <span class="count">2</span></div>
+    <div class="card expr">🟠 표현 불일치 <span class="count">4</span></div>
+    <div class="card missing">🟡 누락 <span class="count">10</span></div>
+    <div class="card confirm">🔵 확인 필요 <span class="count">6</span></div>
+    <div class="card block">⛔ TC 작성 보류 <span class="count">2</span></div>
+  </div>
+</header>
+
+<div class="main-content">
+
+<!-- 분석 개요 -->
+<section id="overview">
+  <div class="section-title">📁 분석 개요</div>
+  <div class="user-story">
+    <p style="font-size:0.92rem; line-height:1.7; color:#343a40;">
+      <strong>기능 요약</strong>: ICSR(개별 사례 안전성 보고서) 식별 번호(Case ID) 생성 규칙을 구성하는 Admin 설정 기능.<br>
+      번호 조합 구성요소(연도·보고구분·제품약어·자유텍스트·일련번호), 포맷 순서 설정, 자릿수, 시작 번호, Import 시 식별자 처리 방식, 만료 알림·자동 확장 등을 포괄함.<br><br>
+      <strong>총 요구사항</strong>: 55건 (검증 대상: 54건 / 제외 TBD: 1건)<br>
+      <strong>주요 리스크</strong>: Import 옵션 A와 C.1.8.1 자동 복사 로직 간 충돌(CONFLICT-002), Year=N/A 시 포맷 영역 비활성화 여부(CONFIRM-002)는 TC 작성 전 기획 확인 필수.
+    </p>
+  </div>
+</section>
+
+<!-- 기획 충돌 -->
+<section id="conflict">
+  <div class="section-title">🔴 기획 충돌 (Conflict) — 2건</div>
+
+  <div class="issue-card severity-conflict">
+    <div class="issue-header">
+      <span class="issue-id">CONFLICT-001</span>
+      <span class="severity-badge">🔴 충돌</span>
+      <span class="impact high">영향도: High</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">Case Level 표시 형식 — "일련번호" vs "[설정된 번호 조합]" 불일치</div>
+      <div class="doc-ref">
+        <span class="doc-label">문서 A</span>
+        <span class="doc-name">Case ID의 개념</span>
+        <blockquote class="original-text">"해당 Case ID는 Case Edit의 Case ID에 표시되며 Tracker의 Case ID에 표시된다."<br>→ Case ID = [설정된 번호 조합] 전체 (Year + 보고구분 + 일련번호 등)</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">문서 B</span>
+        <span class="doc-name">ICSR 식별자 관리 사양서 › Case vs Report Identifier 노출 사양</span>
+        <blockquote class="original-text">"Case Level | Tracker List, Case의 Case ID | <strong>일련번호</strong> | 예: 202604ST001"<br>→ 표시 형식 명칭이 "일련번호"이나 예시 202604ST001은 연도+구분자+번호 복합 조합</blockquote>
+      </div>
+      <div class="issue-desc">
+        Tracker 및 Case Edit에 표시되는 값이 [설정된 번호 조합] 전체인지, 순수 일련번호만인지 불일치.<br>
+        예시 <code>202604ST001</code>은 [설정된 번호 조합]처럼 보이나 형식 명칭은 "일련번호"로 기술됨.
+      </div>
+      <div class="action-box"><strong>권장 조치:</strong> ICSR 식별자 관리 사양서의 "일련번호" 명칭을 실제 표시 내용에 맞게 수정 필요. 기획 확인 후 단일 정의로 통일.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-conflict">
+    <div class="issue-header">
+      <span class="issue-id">CONFLICT-002</span>
+      <span class="severity-badge">🔴 충돌</span>
+      <span class="impact high">영향도: High</span>
+      <span class="tc-impact block">⛔ TC 작성 보류</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">Import 옵션 A와 C.1.8.1 자동 복사 로직의 상호 충돌</div>
+      <div class="doc-ref">
+        <span class="doc-label">문서 A</span>
+        <span class="doc-name">Import 설정 › 옵션 A</span>
+        <blockquote class="original-text">"A. C.1.8.1만 유지 | 파일 내 값 사용 | C.1.8.1: 파일 내 데이터 유지"<br>→ 파일 내 C.1.8.1이 없는 경우 동작 미명시</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">문서 B</span>
+        <span class="doc-name">C.1.1, C.1.8.1 동일 입력 설정</span>
+        <blockquote class="original-text">"C.1.8.1 값이 비어 있는 경우(Null)에 한해, C.1.1의 번호를 그대로 C.1.8.1에 복사하여 기입"</blockquote>
+      </div>
+      <div class="issue-desc">
+        Import 옵션 A에서 파일 내 C.1.8.1이 Null인 경우, "C.1.8.1 파일 내 데이터 유지" 정책과 "Null이면 C.1.1 복사" 로직이 충돌함. 어느 로직이 우선 적용되는지 불명확.
+      </div>
+      <div class="action-box"><strong>권장 조치:</strong> Import 옵션 A + C.1.8.1 Null 케이스의 동작을 기획서에 명시. 기획 확인 전까지 Import TC 작성 보류.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 표현 불일치 -->
+<section id="expr">
+  <div class="section-title">🟠 표현 불일치 (Expression Gap) — 4건</div>
+
+  <div class="issue-card severity-expr">
+    <div class="issue-header">
+      <span class="issue-id">EXPR-001</span>
+      <span class="severity-badge">🟠 표현 불일치</span>
+      <span class="impact medium">영향도: Medium</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">"자유 텍스트" / "Free Text" / "Custom Text" 3종 혼용</div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 A</span><span class="doc-name">"자유 텍스트"</span>
+        <blockquote class="original-text">섹션 제목 "자유 텍스트 추가", Chip 이름 "TXT=자유 텍스트"</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 B</span><span class="doc-name">"Free Text"</span>
+        <blockquote class="original-text">"Free Text를 체크박스 형태로 선택 가능"</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 C</span><span class="doc-name">"Custom Text"</span>
+        <blockquote class="original-text">"선택 시 [Custom Text] 블록 제공"</blockquote>
+      </div>
+      <div class="action-box"><strong>권장 조치:</strong> 세 표현 중 하나로 통일. 기획자 확인 후 결정.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-expr">
+    <div class="issue-header">
+      <span class="issue-id">EXPR-002</span>
+      <span class="severity-badge">🟠 표현 불일치</span>
+      <span class="impact medium">영향도: Medium</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">"일련번호" / "시리얼 넘버" / "보고자 관리번호" 혼용</div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 A</span><span class="doc-name">"일련번호"</span>
+        <blockquote class="original-text">ICSR 식별자 관리 사양서 Case Level 표시 형식 칼럼, 일련번호 자릿수 설정 섹션 제목</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 B</span><span class="doc-name">"시리얼 넘버"</span>
+        <blockquote class="original-text">일련번호 자릿수 설정 본문: "시리얼 넘버 길이를 5로 설정한 경우"</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 C</span><span class="doc-name">"보고자 관리번호"</span>
+        <blockquote class="original-text">안내 문구: "입력한 시작번호부터 보고자 관리번호가 생성됩니다"</blockquote>
+      </div>
+      <div class="action-box"><strong>권장 조치:</strong> 순수 일련번호를 지칭하는 표현을 하나로 통일 후 기획서 전체 적용.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-expr">
+    <div class="issue-header">
+      <span class="issue-id">EXPR-003</span>
+      <span class="severity-badge">🟠 표현 불일치</span>
+      <span class="impact low">영향도: Low</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">"보고 구분" / "Type of Report" / "TR" 혼용</div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 A</span><span class="doc-name">섹션 제목</span>
+        <blockquote class="original-text">"Type of Report (보고 구분) 추가"</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 B</span><span class="doc-name">Chip 이름</span>
+        <blockquote class="original-text">"TR=보고 구분"</blockquote>
+      </div>
+      <div class="action-box"><strong>권장 조치:</strong> 영/한 병기가 의도된 것이라면 기획서에 명시. 아니라면 통일 표현 지정.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-expr">
+    <div class="issue-header">
+      <span class="issue-id">EXPR-004</span>
+      <span class="severity-badge">🟠 표현 불일치</span>
+      <span class="impact low">영향도: Low</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">"Product Abbreviation" / "제품 약어" / "PRD" 혼용</div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 A</span><span class="doc-name">섹션 제목</span>
+        <blockquote class="original-text">"Product Abbreviation 추가"</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 B</span><span class="doc-name">표시 문구</span>
+        <blockquote class="original-text">"Admin의 Product Config에 등록된 제품 약어를 참조합니다"</blockquote>
+      </div>
+      <div class="doc-ref">
+        <span class="doc-label">표현 C</span><span class="doc-name">Chip 이름</span>
+        <blockquote class="original-text">"PRD=제품 약어"</blockquote>
+      </div>
+      <div class="action-box"><strong>권장 조치:</strong> 의도적 병기라면 기획서에 명시. 아니라면 하나의 표현으로 통일.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 누락 항목 -->
+<section id="missing">
+  <div class="section-title">🟡 누락 항목 (Missing) — 10건</div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-001</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact high">영향도: High</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">Case ID Configuration 접근 권한/역할 미정의</div>
+      <div class="issue-desc">Case ID 설정 화면은 Admin 기능으로 보이나, 어떤 역할(Role)이 조회/편집 가능한지 기술되지 않음. 권한 차이가 있는 사용자의 TC 작성 기준 불명확.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 역할별 접근 범위(조회/편집) 추가 기술 필요.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-002</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact high">영향도: High</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">조직 식별자 입력 규칙 위반 시 에러 메시지 미정의</div>
+      <div class="issue-desc">조직 식별자: 최소 1~최대 10글자, 영어·숫자만. 위반(11글자 이상, 특수문자 입력 등) 시 에러 메시지 문구 없음.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 에러 조건별 메시지 문구 추가 필요.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-003</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact medium">영향도: Medium</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">자유 텍스트 입력 규칙 위반 시 에러 메시지 미정의</div>
+      <div class="issue-desc">자유 텍스트: 영문·숫자만, 최대 6글자. 위반 시 에러 메시지 없음.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 에러 조건별 메시지 문구 추가 필요.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-004</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact medium">영향도: Medium</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">시작 번호 설정 제한 초과 시 에러 메시지 미정의</div>
+      <div class="issue-desc">시작 번호 ≤ [최대 생성 가능 숫자 - 400] 제한이 있으나, 초과 입력 시 에러 메시지 및 표시 시점 미기술.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 제한 초과 시 에러 메시지 문구 및 표시 시점(입력 중/저장 시) 추가 필요.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-005</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact medium">영향도: Medium</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">국가코드 우선순위 3번과 3-1번의 계층 구조 불명확</div>
+      <div class="issue-desc">국가코드 우선순위 목록에서 3번 항목 하위에 "1. (First)" 항목이 중첩 기술되어 있어, 전체 우선순위가 4단계인지 5단계인지 불명확.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 우선순위를 명확한 1→N 순번으로 재기술 필요.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-006</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact high">영향도: High</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">"자사 제품" 판단 기준 누락</div>
+      <div class="issue-desc">"Suspect이자 자사 제품이 두 개 이상일 경우 첫 번째 자사제품 약어 사용"에서 '자사 제품' 판단 기준(어떤 필드값을 기준으로 자사 제품을 구별하는지)이 미정의.</div>
+      <div class="action-box"><strong>권장 조치:</strong> Product Config의 '자사 제품' 구분 기준 필드 및 판단 로직 추가 필요.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-007</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact high">영향도: High</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">일련번호 칩(######)의 필수 포함 여부 미명시</div>
+      <div class="issue-desc">포맷 설정(Drag & Drop) 영역에서 일련번호 칩(######)이 항상 필수인지, 선택적으로 추가/삭제할 수 있는지 본문에 명시되지 않음.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 일련번호 칩의 필수 여부 명시 필요. (필수 포함/삭제 불가 vs 선택적 추가)</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-008</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact medium">영향도: Medium</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">C.1.1 "개별 수정" 문구 의미 불명확</div>
+      <div class="issue-desc">"C.1.1은 개별 수정"이라는 문구가 있으나 "개별 케이스에만 부여된다"는 의미인지 "개별적으로 수정 가능하다"는 의미인지 해석이 갈림.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 해당 문구를 명확한 동사형 문장으로 재기술 필요.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-009</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact medium">영향도: Medium</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">설정 저장 실패 시 처리 미정의</div>
+      <div class="issue-desc">Case ID Configuration 설정 저장 시 네트워크 오류 등으로 실패할 경우의 동작(에러 메시지, 롤백, 재시도 안내 등) 미기술.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 에러/예외 처리 섹션에 저장 실패 케이스 추가 필요.</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-missing">
+    <div class="issue-header">
+      <span class="issue-id">MISSING-010</span>
+      <span class="severity-badge">🟡 누락</span>
+      <span class="impact medium">영향도: Medium</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">케이스 삭제 후 C.1.1 처리 방식 미정의</div>
+      <div class="issue-desc">일련번호 재사용 금지는 명시되었으나, 케이스 삭제 후 C.1.1 레코드의 처리 방식(논리 삭제/이력 보관 등)이 기술되지 않음.</div>
+      <div class="action-box"><strong>권장 조치:</strong> 케이스 삭제 시 C.1.1 처리 방식 추가 기술 필요.</div>
+    </div>
+  </div>
+</section>
+
+<!-- 확인 필요 -->
+<section id="confirm">
+  <div class="section-title">🔵 확인 필요 사항 (Confirmation) — 6건</div>
+
+  <div class="issue-card severity-confirm">
+    <div class="issue-header">
+      <span class="issue-id">CONFIRM-001</span>
+      <span class="severity-badge">🔵 확인 필요</span>
+      <span class="tc-impact block">⛔ TC 작성 보류</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">Import 옵션 A + C.1.8.1 Null 케이스 동작</div>
+      <div class="issue-desc"><strong>질문:</strong> Import 옵션 A 선택 + 파일 내 C.1.8.1이 Null인 경우, "C.1.8.1 없을 때 C.1.1 복사" 로직이 적용되는가?<br>확인 전까지 Import 관련 TC 작성 불가.</div>
+      <div class="action-box"><strong>상태:</strong> 미해결</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-confirm">
+    <div class="issue-header">
+      <span class="issue-id">CONFIRM-002</span>
+      <span class="severity-badge">🔵 확인 필요</span>
+      <span class="tc-impact block">⛔ TC 작성 보류</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">Year=N/A 설정 시 Drag & Drop 영역 활성화 여부</div>
+      <div class="issue-desc"><strong>질문:</strong> Year=N/A + Type of Report 미체크 시 포맷 설정(Drag & Drop) 영역이 비활성화되는가? 비활성화 시 일련번호 칩 위치 설정 방법은?<br>N/A 케이스 TC 작성 방향 결정 불가.</div>
+      <div class="action-box"><strong>상태:</strong> 미해결</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-confirm">
+    <div class="issue-header">
+      <span class="issue-id">CONFIRM-003</span>
+      <span class="severity-badge">🔵 확인 필요</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">자릿수 자동 확장 후 만료 임박 팝업 재노출 여부</div>
+      <div class="issue-desc"><strong>질문:</strong> 6자리로 확장 후 잔여 번호가 다시 100개 이하가 되면 팝업이 재노출되는가?</div>
+      <div class="action-box"><strong>상태:</strong> 미해결 | TC 영향: 참고용</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-confirm">
+    <div class="issue-header">
+      <span class="issue-id">CONFIRM-004</span>
+      <span class="severity-badge">🔵 확인 필요</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">"Do not show again" 적용 범위</div>
+      <div class="issue-desc"><strong>질문:</strong> "Do not show again" 선택이 해당 사용자에게 영구 적용인가, 아니면 현재 자릿수 구간(5자리 등)에서만 유효한가?</div>
+      <div class="action-box"><strong>상태:</strong> 미해결 | TC 영향: 참고용</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-confirm">
+    <div class="issue-header">
+      <span class="issue-id">CONFIRM-005</span>
+      <span class="severity-badge">🔵 확인 필요</span>
+      <span class="tc-impact block">⛔ TC 작성 보류</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">Convert 기능 현재 구현 범위 (TBD)</div>
+      <div class="issue-desc"><strong>질문:</strong> "추후 Convert에도 적용 예정"으로 명시된 Import 설정의 Convert 적용이 현재 개발 범위에 포함되는가?</div>
+      <div class="action-box"><strong>상태:</strong> 미해결 | TC 영향: TC 작성 보류</div>
+    </div>
+  </div>
+
+  <div class="issue-card severity-confirm">
+    <div class="issue-header">
+      <span class="issue-id">CONFIRM-006</span>
+      <span class="severity-badge">🔵 확인 필요</span>
+    </div>
+    <div class="issue-body">
+      <div class="issue-title">케이스 삭제 후 C.1.1 공백 상태 처리</div>
+      <div class="issue-desc"><strong>질문:</strong> 케이스 삭제 시 C.1.1 레코드 처리 방식 (논리 삭제, 이력 보관 등)</div>
+      <div class="action-box"><strong>상태:</strong> 미해결 | TC 영향: 참고용</div>
+    </div>
+  </div>
+</section>
+
+<!-- 테스트 포인트 -->
+<section id="testpoints">
+  <div class="section-title">📋 QA 테스트 포인트 — 기능 분해 매트릭스</div>
+  <table class="test-matrix">
+    <tr>
+      <th>기능 영역</th><th>테스트 포인트</th><th>우선순위</th><th>설계 기법</th><th>TC 유형</th>
+    </tr>
+    <tr>
+      <td>국가코드 결정 로직</td>
+      <td>우선순위 1→4 순서 적용, KR 기본값 동작</td>
+      <td class="priority-high">High</td><td>DT, EP</td><td>Functional, Boundary</td>
+    </tr>
+    <tr>
+      <td>조직 식별자 입력</td>
+      <td>1글자 / 10글자 / 11글자 입력, 특수문자 입력, 한글 입력</td>
+      <td class="priority-high">High</td><td>BVA, EP</td><td>Functional, Negative</td>
+    </tr>
+    <tr>
+      <td>Year 설정</td>
+      <td>2-digit / 4-digit / N/A 선택 및 리셋 동작, 연도 경계(12월 31일→1월 1일)</td>
+      <td class="priority-high">High</td><td>BVA, EP</td><td>Functional, Boundary</td>
+    </tr>
+    <tr>
+      <td>Type of Report 매핑</td>
+      <td>SP/RS/OT/UN 각 값에 맞는 코드 자동 추가, 미체크 시 비표시</td>
+      <td class="priority-high">High</td><td>EP, DT</td><td>Functional</td>
+    </tr>
+    <tr>
+      <td>Product Abbreviation 활성화</td>
+      <td>제품 있음/없음/UNK 표시, 자사 Suspect 2개 이상 시 첫 번째 약어</td>
+      <td class="priority-high">High</td><td>EP, DT</td><td>Functional, Negative</td>
+    </tr>
+    <tr>
+      <td>자유 텍스트 입력</td>
+      <td>1글자 / 6글자 / 7글자 입력, 특수문자 입력, 빈값</td>
+      <td class="priority-medium">Medium</td><td>BVA, EP</td><td>Functional, Negative</td>
+    </tr>
+    <tr>
+      <td>일련번호 자릿수</td>
+      <td>3~9 선택, Zero-padding 적용, 중간 변경 후 이후 케이스 적용</td>
+      <td class="priority-high">High</td><td>EP, BVA</td><td>Functional, Boundary</td>
+    </tr>
+    <tr>
+      <td>시작 번호 설정</td>
+      <td>기본값 1, 사용자 입력, 최후 번호보다 작은 값 입력 시 동작, 제한값 초과 입력</td>
+      <td class="priority-high">High</td><td>BVA, EP</td><td>Functional, Negative, Boundary</td>
+    </tr>
+    <tr>
+      <td>Drag & Drop 포맷 설정</td>
+      <td>칩 추가/삭제/순서 변경 → Preview 실시간 반영, 칩 비활성화 시 이전 설정값 유지</td>
+      <td class="priority-medium">Medium</td><td>ST</td><td>Functional</td>
+    </tr>
+    <tr>
+      <td>ID 재사용 방지</td>
+      <td>케이스 삭제 후 동일 번호 미재발급 확인</td>
+      <td class="priority-high">High</td><td>EP</td><td>Functional, Negative</td>
+    </tr>
+    <tr>
+      <td>만료 임박 팝업</td>
+      <td>잔여 100개 도달 시 팝업 노출, Confirm 재노출, Do not show again 미노출</td>
+      <td class="priority-medium">Medium</td><td>BVA</td><td>Functional, Boundary</td>
+    </tr>
+    <tr>
+      <td>자릿수 자동 확장</td>
+      <td>5자리 99999 이후 100000(6자리) 생성 확인, 번호 연속성</td>
+      <td class="priority-high">High</td><td>BVA</td><td>Functional, Boundary</td>
+    </tr>
+    <tr>
+      <td>Import 옵션 A</td>
+      <td>C.1.1 신규 부여 확인, C.1.8.1 파일 값 유지 확인</td>
+      <td class="priority-high">High</td><td>EP, DT</td><td>Functional</td>
+    </tr>
+    <tr>
+      <td>Import 옵션 B</td>
+      <td>C.1.1, C.1.8.1 모두 파일 값 유지 확인</td>
+      <td class="priority-high">High</td><td>EP</td><td>Functional</td>
+    </tr>
+    <tr>
+      <td>식별자 수정 불가</td>
+      <td>Approval 이후 C.1.1/C.1.8.1 수정 버튼 비표시, 편집 시도 차단</td>
+      <td class="priority-high">High</td><td>EP</td><td>Functional, Negative</td>
+    </tr>
+    <tr>
+      <td>Case/Report Level 표시</td>
+      <td>Tracker/Case Edit: Case Level 형식, ICSR 보고서: Report Level 형식(국가-조직-번호)</td>
+      <td class="priority-high">High</td><td>EP</td><td>Functional</td>
+    </tr>
+    <tr>
+      <td>Destination 확정 시 국가코드 결정</td>
+      <td>보고처 확정 전/후 C.1.1 생성 시점 및 국가코드 포함 여부</td>
+      <td class="priority-medium">Medium</td><td>ST</td><td>Functional</td>
+    </tr>
+  </table>
+</section>
+
+<!-- 엣지 케이스 -->
+<section id="edgecase">
+  <div class="section-title">⚠️ 엣지 케이스</div>
+  <ul class="edge-list">
+    <li><span class="edge-tag">경계값</span>조직 식별자 정확히 10글자 입력 → 허용 / 11글자 → 차단</li>
+    <li><span class="edge-tag">경계값</span>일련번호 자릿수 3자리 설정 + 시작번호 999 입력 → 1000 케이스 생성 시 자동 확장 여부</li>
+    <li><span class="edge-tag">경계값</span>잔여 번호 정확히 100개, 101개에서 팝업 노출 여부</li>
+    <li><span class="edge-tag">경계값</span>시작 번호 = [최대 - 400] 정확히 입력 → 허용 / [최대 - 399] 입력 → 차단</li>
+    <li><span class="edge-tag">상태전이</span>Year=2-digit 설정 후 12월 31일 23:59:59 케이스 생성 → 1월 1일 00:00:00 첫 케이스: 일련번호 리셋(00001) 확인</li>
+    <li><span class="edge-tag">상태전이</span>Approval 상태로 전환 직전 C.1.1 수정 가능 여부 → 전환 직후 수정 버튼 비표시 확인</li>
+    <li><span class="edge-tag">상태전이</span>일련번호 자릿수 중간 변경 → 변경 직전 케이스 기존 자릿수 유지, 변경 직후 케이스 새 자릿수 적용</li>
+    <li><span class="edge-tag">동시성</span>30개 케이스 동시 생성 시 일련번호 중복 없이 순차 부여 확인</li>
+    <li><span class="edge-tag">외부 연동</span>Product Config에 제품 약어 미등록 + 제품 불러오기 → UNK 표시</li>
+    <li><span class="edge-tag">외부 연동</span>Reporter's Country Code 없음 + Reaction Country 없음 → KR 기본값 적용</li>
+    <li><span class="edge-tag">PV 도메인</span>Import 파일 내 C.1.8.1이 비어 있는 경우 → 옵션 A/B별 동작 확인 (CONFIRM-001 해결 후 진행)</li>
+    <li><span class="edge-tag">PV 도메인</span>동일 조합의 가장 최후 번호가 006인데 시작 번호를 003으로 설정 → 007로 시작 확인</li>
+    <li><span class="edge-tag">PV 도메인</span>Suspect 자사 제품 1개(활성화), 0개(비활성화/UNK) 케이스 각각 확인</li>
+    <li><span class="edge-tag">보안</span>수정 불가 식별자를 API 직접 호출로 변경 시도 → 차단 확인</li>
+  </ul>
+</section>
+
+<!-- 유저 스토리 -->
+<section id="userstory">
+  <div class="section-title">👤 유저 스토리 (역할별 시나리오)</div>
+
+  <div class="user-story">
+    <div class="story-header">
+      <span class="role-badge">Org Admin</span>
+      <span class="flow-label">Case ID 포맷 최초 설정</span>
+    </div>
+    <p style="font-size:0.85rem; color:#6c757d; margin-bottom:10px;">목표: 신규 조직에 Case ID 생성 규칙을 설정하고 저장</p>
+    <div class="flow-step"><span class="step-no">①</span>Case ID Configuration 화면 접근 → 조직 식별자 입력 (영문 2~10자)</div>
+    <div class="flow-step"><span class="step-no">②</span>Year 설정 (2-digit / 4-digit / N/A) 선택 → 툴팁 확인</div>
+    <div class="flow-step"><span class="step-no">③</span>Type of Report 체크 → 포맷 설정 영역 활성화 확인</div>
+    <div class="flow-step"><span class="step-no">④</span>칩 드래그 앤 드롭으로 YYYY-TR-##### 순서 배치 → Preview 실시간 반영 확인</div>
+    <div class="flow-step"><span class="step-no">⑤</span>일련번호 자릿수 선택(5자리), 시작 번호 1 → 저장</div>
+    <div class="flow-step"><span class="step-no">⑥</span>케이스 생성 → Case ID KR-SELTA-202600001 형식 확인</div>
+  </div>
+
+  <div class="user-story">
+    <div class="story-header">
+      <span class="role-badge">Org Admin</span>
+      <span class="flow-label">Import 케이스 식별자 설정</span>
+    </div>
+    <p style="font-size:0.85rem; color:#6c757d; margin-bottom:10px;">목표: E2B 파일 Import 시 C.1.1/C.1.8.1 처리 방식 선택</p>
+    <div class="flow-step"><span class="step-no">①</span>Import 설정 섹션 접근 → 현재 기본값(옵션 A) 확인</div>
+    <div class="flow-step"><span class="step-no">②</span>[정상] 옵션 A 유지 → Import 실행 → C.1.1 신규 부여, C.1.8.1 파일 값 유지 확인</div>
+    <div class="flow-step"><span class="step-no">③</span>[대안] 옵션 B 선택 → Import 실행 → C.1.1, C.1.8.1 모두 파일 값 유지 확인</div>
+    <div class="flow-step"><span class="step-no">④(예외)</span>파일 내 C.1.8.1 Null → 옵션 A 동작 확인 (CONFIRM-001 해결 필요)</div>
+  </div>
+
+  <div class="user-story">
+    <div class="story-header">
+      <span class="role-badge">모든 사용자</span>
+      <span class="flow-label">Case ID 만료 임박 알림 수신</span>
+    </div>
+    <p style="font-size:0.85rem; color:#6c757d; margin-bottom:10px;">목표: 일련번호 소진 전 사전 인지 및 조치</p>
+    <div class="flow-step"><span class="step-no">①</span>케이스 생성 → 잔여 번호 100개 이하 진입 → 팝업 자동 노출</div>
+    <div class="flow-step"><span class="step-no">②</span>[정상] Confirm 클릭 → 팝업 닫힘, 다음 로그인 시 재노출</div>
+    <div class="flow-step"><span class="step-no">③</span>[대안] Do not show again 체크 + Confirm → 해당 사용자 미노출</div>
+    <div class="flow-step"><span class="step-no">④(자동)</span>자릿수 초과 → 1XXXXX 확장 번호 생성, 기존 팝업 자동 미노출</div>
+  </div>
+</section>
+
+<!-- RTM v0 미리보기 -->
+<section id="rtm">
+  <div class="section-title">📊 RTM v0 — 요구사항 추출 결과 (상위 10건)</div>
+  <table class="test-matrix">
+    <tr><th>REQ_Id</th><th>요구사항 내용</th><th>유형</th><th>출처</th><th>제외여부</th></tr>
+    <tr><td>REQ-001</td><td>Case ID는 케이스 생성 시 자동으로 부여됨</td><td>기능명세</td><td>Case ID의 개념</td><td>-</td></tr>
+    <tr><td>REQ-004</td><td>ID 재사용 방지: 삭제된 케이스의 일련번호도 절대 재사용 금지</td><td>비즈니스 규칙</td><td>개요 및 정책</td><td>-</td></tr>
+    <tr><td>REQ-011</td><td>조직 식별자: 최소 1~최대 10글자, 영어·숫자만</td><td>데이터 규칙</td><td>기본 구조</td><td>-</td></tr>
+    <tr><td>REQ-015</td><td>Type of Report 체크 시 값에 따라 구분자 자동 추가 (SP/RS/OT/UN)</td><td>비즈니스 규칙</td><td>번호 조합 > ToR</td><td>-</td></tr>
+    <tr><td>REQ-025</td><td>일련번호 자릿수: 3, 4, 5, 6, 7, 8, 9 중 선택</td><td>기능명세</td><td>일련번호 자릿수</td><td>-</td></tr>
+    <tr><td>REQ-031</td><td>최후 번호 검증: 이미 생성된 최후 번호보다 커야 함</td><td>비즈니스 규칙</td><td>최후 번호 검증</td><td>-</td></tr>
+    <tr><td>REQ-038</td><td>Case ID 만료 임박 알림: 남은 번호 100개 이하 시 팝업 노출</td><td>기능명세</td><td>만료 경고</td><td>-</td></tr>
+    <tr><td>REQ-044</td><td>자릿수 자동 확장: 최대 초과 시 한 자리 추가, 1XXXXX 형식 시작</td><td>비즈니스 규칙</td><td>자릿수 자동 확장</td><td>-</td></tr>
+    <tr><td>REQ-053</td><td>식별자 수정 불가: 부여 즉시 수동 수정 절대 불가</td><td>비즈니스 규칙</td><td>식별자 수정 정책</td><td>-</td></tr>
+    <tr><td>REQ-EX-001</td><td>Convert 기능 Import 설정 적용 (추후 예정)</td><td>기능명세</td><td>Import 설정</td><td>TBD</td></tr>
+  </table>
+  <p style="margin-top:12px; color:#6c757d; font-size:0.85rem;">
+    * 전체 RTM (55건): Safety1.0/agent_output/rtm/Case ID_RTM.md
+  </p>
+</section>
+
+</div>
+</div>
+</div>
+
+<script>
+document.querySelectorAll('.sidebar-item').forEach(item => {
+  item.addEventListener('click', function() {
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    this.classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

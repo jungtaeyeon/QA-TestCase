@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>기획 파악용 — Case ID</title>
+<style>
+:root { --green: #1a6b3a; --bg: #f8f9fa; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Pretendard', -apple-system, sans-serif; background: var(--bg); }
+.report-layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+.sidebar {
+  background: #1a1a2e; padding: 24px 0; position: sticky;
+  top: 0; height: 100vh; overflow-y: auto;
+}
+.sidebar-logo { color: white; font-size: 0.95rem; font-weight: 700; padding: 0 18px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.sidebar-item {
+  display: flex; align-items: center; gap: 8px; padding: 9px 18px;
+  color: rgba(255,255,255,0.7); text-decoration: none; font-size: 0.85rem;
+  border-left: 3px solid transparent;
+}
+.sidebar-item:hover { background: rgba(255,255,255,0.08); color: white; border-left-color: #4a9eff; }
+.report-header { background: var(--green); color: white; padding: 28px 40px; }
+.report-header h1 { font-size: 1.5rem; margin-bottom: 8px; }
+.meta { display: flex; gap: 20px; font-size: 0.83rem; color: rgba(255,255,255,0.7); flex-wrap: wrap; }
+.notice { background: rgba(255,255,255,0.15); padding: 2px 10px; border-radius: 4px; }
+.main-content { padding: 32px 40px; }
+section { margin-bottom: 44px; scroll-margin-top: 20px; }
+.section-title {
+  font-size: 1.1rem; font-weight: 700; margin-bottom: 16px;
+  padding-bottom: 8px; border-bottom: 2px solid #e9ecef;
+  display: flex; align-items: center; gap: 8px;
+}
+.card { background: white; border-radius: 10px; padding: 20px 24px; margin-bottom: 14px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.card p { font-size: 0.9rem; line-height: 1.7; color: #343a40; }
+.card ul { margin: 8px 0 0 16px; font-size: 0.88rem; line-height: 1.8; color: #495057; }
+.sub-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 8px; color: #212529; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.87rem; }
+th { background: #343a40; color: white; padding: 10px 12px; text-align: left; }
+td { padding: 9px 12px; border-bottom: 1px solid #e9ecef; vertical-align: top; line-height: 1.5; }
+tr:hover td { background: #f8f9fa; }
+.badge { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; font-weight: 600; }
+.badge.required { background: #ffe0e0; color: #dc3545; }
+.badge.optional { background: #e8f4fd; color: #0c5460; }
+.badge.auto { background: #d4edda; color: #155724; }
+.badge.manual { background: #fff3cd; color: #856404; }
+
+.flow-box { background: white; border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.flow-step { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px dashed #dee2e6; font-size: 0.88rem; line-height: 1.5; }
+.flow-step:last-child { border-bottom: none; }
+.step-no { font-weight: 700; color: var(--green); min-width: 22px; }
+</style>
+</head>
+<body>
+<div class="report-layout">
+
+<nav class="sidebar">
+  <div class="sidebar-logo">📖 기획 파악용</div>
+  <a class="sidebar-item" href="#overview">📌 기능 개요</a>
+  <a class="sidebar-item" href="#concept">🔑 Case ID 개념</a>
+  <a class="sidebar-item" href="#structure">🏗️ 기본 구조 & 국가코드</a>
+  <a class="sidebar-item" href="#components">⚙️ 번호 조합 구성요소</a>
+  <a class="sidebar-item" href="#serial">🔢 일련번호 설정</a>
+  <a class="sidebar-item" href="#format">🖱️ 포맷 설정 (D&D)</a>
+  <a class="sidebar-item" href="#expire">⚠️ 만료 알림 & 자동 확장</a>
+  <a class="sidebar-item" href="#import">📥 Import 설정</a>
+  <a class="sidebar-item" href="#icsr">📋 ICSR 식별자 관리</a>
+  <a class="sidebar-item" href="#immutable">🔒 식별자 수정 정책</a>
+</nav>
+
+<div>
+<header class="report-header">
+  <h1>📖 기획 파악용 문서 — Case ID</h1>
+  <div class="meta">
+    <span>기능: Case ID Configuration</span>
+    <span>기획서: plan/00. Common (공통 정책)/Admin (Org Admin)/ICSR Config/Case ID/Case ID.md</span>
+    <span>작성일: 2026-05-06</span>
+    <span class="notice">※ 기획서 원문 기반 — 내용 변형 없음</span>
+  </div>
+</header>
+
+<div class="main-content">
+
+<!-- 기능 개요 -->
+<section id="overview">
+  <div class="section-title">📌 기능 개요</div>
+  <div class="card">
+    <div class="sub-title">목적</div>
+    <p>ICSR(개별 사례 안전성 보고서)의 식별 번호 생성 규칙을 표준화하여 데이터 정합성을 확보하고 관리 효율성을 증대함.</p>
+    <br>
+    <div class="sub-title">대상 필드</div>
+    <p>Case ID 필드. 추후 국가코드, 조직명을 포함하여 C.1.1 R3 필드에 매핑.</p>
+    <br>
+    <div class="sub-title">필수 전제 규칙</div>
+    <ul>
+      <li>설정 가능한 모든 텍스트는 영문 및 숫자만 가능, 대소문자 구분하여 입력 가능</li>
+      <li>ID 재사용 방지: 한 번 부여된 일련번호는 케이스가 삭제되더라도 절대 재사용되지 않음</li>
+    </ul>
+    <br>
+    <div class="sub-title">기획 변경 이력 요약</div>
+    <table>
+      <tr><th>날짜</th><th>주요 변경 사항</th><th>버전</th></tr>
+      <tr><td>26.04.27</td><td>Preview 표시 사항 업데이트, 이전 수정사항 헷갈리는 부분 재업데이트</td><td>v1.0.250427</td></tr>
+      <tr><td>26.04.17</td><td>Year+Month 조합 삭제, 시작 번호 설정 규칙 정책 추가, 자릿수 알림 및 확장 기준 변경</td><td>v1.0.250417</td></tr>
+      <tr><td>26.04.15</td><td>메뉴 이름 변경, Case ID 및 C.1.1/C.1.8.1 정책 업데이트</td><td>v1.0.260415</td></tr>
+      <tr><td>26.03.20</td><td>최초 작성</td><td>v1.0.260320</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- Case ID 개념 -->
+<section id="concept">
+  <div class="section-title">🔑 Case ID 개념</div>
+  <div class="card">
+    <ul>
+      <li>케이스 생성 시 자동으로 부여되는 ID</li>
+      <li>전체 형식: <code>[국가코드]-[조직 식별자]-[설정된 번호 조합]</code></li>
+      <li><strong>Case ID = [설정된 번호 조합]</strong> 부분만을 의미함</li>
+      <li>표시 위치: Case Edit의 Case ID 필드, Tracker의 Case ID 열</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 기본 구조 및 국가코드 -->
+<section id="structure">
+  <div class="section-title">🏗️ 기본 구조 & 국가코드 결정 로직</div>
+  <div class="card">
+    <div class="sub-title">기본 구조</div>
+    <p><code>[국가코드] - [조직 식별자] - [설정된 번호 조합]</code></p>
+    <br>
+    <div class="sub-title">국가코드 결정 우선순위 (자동 결정)</div>
+    <table>
+      <tr><th>순위</th><th>소스</th><th>조건</th></tr>
+      <tr><td>1</td><td>Reporter's Country Code (Primary)</td><td>기본 우선 적용</td></tr>
+      <tr><td>2</td><td>Reporter's Country Code (First)</td><td>Primary 없을 경우, 리스트 첫 번째</td></tr>
+      <tr><td>3</td><td>Identification of Country Where Reaction Occurred (Primary)</td><td>위 정보 없을 경우</td></tr>
+      <tr><td>3-1</td><td>Identification of Country Where Reaction Occurred (First)</td><td>해당 필드에 여러 값이 있을 경우 첫 번째</td></tr>
+      <tr><td>기본값</td><td>KR</td><td>모든 조건 미충족 시</td></tr>
+    </table>
+    <br>
+    <div class="sub-title">조직 식별자</div>
+    <ul>
+      <li>사용자가 직접 텍스트로 입력</li>
+      <li>최소 1글자, 최대 10글자</li>
+      <li>영어(대소문자 구분), 숫자만 입력 가능</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 번호 조합 구성요소 -->
+<section id="components">
+  <div class="section-title">⚙️ 번호 조합 구성요소 설정</div>
+  <p style="font-size:0.88rem; color:#6c757d; margin-bottom:14px;">Year, Type of Report, Product Abbreviation, 자유 텍스트, 일련번호의 조합으로 생성됨</p>
+
+  <div class="card">
+    <div class="sub-title">1. Year (연도)</div>
+    <p>최초 발생인지일(C.1.4)의 데이터값 참조</p><br>
+    <table>
+      <tr><th>구분</th><th>표기 방식</th><th>번호 초기화</th></tr>
+      <tr><td>2-digit year</td><td>YY (예: 26)</td><td>매년 1월 1일 00:00:00 리셋</td></tr>
+      <tr><td>4-digit year</td><td>YYYY (예: 2026)</td><td>매년 1월 1일 00:00:00 리셋</td></tr>
+      <tr><td>N/A</td><td>연도 미표기</td><td>누적 증가 (초기화 없음)</td></tr>
+    </table>
+    <br>
+    <p><strong>툴팁 문구:</strong> "연도 선택 시 매년 초, 연월 선택 시 매월 초에 일련번호가 '00001'로 초기화됩니다. N/A 선택 시(Chip을 추가하지 않았을 경우) 초기화 없이 번호가 계속 누적됩니다."</p>
+  </div>
+
+  <div class="card">
+    <div class="sub-title">2. Type of Report (보고 구분)</div>
+    <p>체크 시 케이스의 Type of Report 값에 따라 구분자가 Case ID에 자동 추가</p><br>
+    <table>
+      <tr><th>Type of Report 값</th><th>추가 코드</th></tr>
+      <tr><td>Spontaneous</td><td>SP</td></tr>
+      <tr><td>Report from Study</td><td>RS</td></tr>
+      <tr><td>Other</td><td>OT</td></tr>
+      <tr><td>Not Available to Sender (Unknown)</td><td>UN</td></tr>
+    </table>
+    <br>
+    <p><strong>표시 문구:</strong> "체크 시 케이스의 Type of Report 값에 따라 구분자가 Case ID에 자동 추가됩니다."</p>
+    <p><strong>Preview 표시:</strong> SP</p>
+  </div>
+
+  <div class="card">
+    <div class="sub-title">3. Product Abbreviation (제품 약어)</div>
+    <ul>
+      <li>데이터 소스: Admin 내 Product Config에 등록된 Product Abbreviation(제품 약어) 필드값 참조</li>
+      <li>노출 조건: 케이스에 '제품 불러오기'로 제품 정보가 포함된 경우에만 활성화. 값이 없으면 UNK 표시</li>
+      <li>Suspect이자 자사 제품이 2개 이상인 경우: 첫 번째 순서의 자사 제품 약어 표시</li>
+      <li><strong>Preview 표시:</strong> PRD</li>
+    </ul>
+    <p style="margin-top:10px;"><strong>표시 문구:</strong> "Admin의 Product Config에 등록된 제품 약어를 참조합니다. 값이 없으면 UNK으로 표시됩니다."</p>
+  </div>
+
+  <div class="card">
+    <div class="sub-title">4. 자유 텍스트 (Free Text / Custom Text)</div>
+    <ul>
+      <li>체크박스 형태로 선택 가능</li>
+      <li>선택 시 [Custom Text] 블록 제공</li>
+      <li>라디오 버튼 선택하여 텍스트 블록 추가</li>
+      <li>사용자가 원하는 문자(영문, 숫자만) 직접 입력, 최대 6글자</li>
+      <li>입력된 텍스트는 드래그 앤 드롭으로 원하는 위치에 배치 가능</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 일련번호 설정 -->
+<section id="serial">
+  <div class="section-title">🔢 일련번호 자릿수 및 시작점 설정</div>
+
+  <div class="card">
+    <div class="sub-title">일련번호 자릿수 설정</div>
+    <ul>
+      <li>선택값: 3, 4, 5, 6, 7, 8, 9 (최대 9자리)</li>
+      <li>선택한 자릿수만큼 번호 앞자리에 '0'을 채움(Zero-padding)</li>
+      <li>중간에 자릿수 변경 시, 이후 생성되는 케이스부터 적용</li>
+    </ul>
+    <br>
+    <p><strong>표시 문구:</strong> "선택한 자릿수를 5로 설정할 경우 숫자 앞에 0이 붙어 00001, 00002와 같은 5자리 숫자로 생성됩니다."</p>
+  </div>
+
+  <div class="card">
+    <div class="sub-title">시작 번호 설정</div>
+    <ul>
+      <li>기본값: 1 (1 입력 시 1부터 시작)</li>
+      <li>사용자가 숫자 N을 입력하면 N부터 카운팅 시작</li>
+      <li>적용 시점: 설정 저장 후 생성되는 첫 번째 케이스부터 즉시 적용</li>
+    </ul>
+    <br>
+    <div class="sub-title">최후 번호 검증 규칙</div>
+    <ul>
+      <li>시작 번호는 해당 조합에서 이미 생성된 가장 최후 번호보다 커야 함</li>
+      <li>예: 최후 번호가 006이면 → 007로 생성됨</li>
+      <li>검증 범위: 동일 조합 내 생성 이력에 한함</li>
+    </ul>
+    <br>
+    <div class="sub-title">시작 번호 설정 제한</div>
+    <ul>
+      <li>제약: 시작 번호는 [최대 생성 가능 숫자 - 400]을 초과하여 설정할 수 없음</li>
+    </ul>
+    <p style="margin-top:10px;"><strong>안내 문구:</strong> "입력한 시작번호부터 보고자 관리번호가 생성됩니다. 시작 번호를 '25'로 입력하고 자릿수를 '5자리'로 설정하면, 첫 번째 케이스 ID는 '00025'와 같은 형식으로 생성됩니다."</p>
+  </div>
+</section>
+
+<!-- 포맷 설정 -->
+<section id="format">
+  <div class="section-title">🖱️ 포맷 설정 및 인터랙션 (Drag & Drop)</div>
+  <div class="card">
+    <ul>
+      <li><strong>노출 조건:</strong> Year를 연도(2/4-digit)로 선택하거나, Type of Report를 체크할 경우에만 활성화</li>
+      <li>Chip 형태의 블록으로 구성: YY/YYYY, ######(일련번호), TR(보고 구분), PRD(제품 약어), TXT(자유 텍스트)</li>
+      <li>Chip 추가 시 하단의 해당 설정 영역 활성화</li>
+      <li>Chip 드래그 앤 드롭으로 좌우 순서 변경 → 상단 Preview에 실시간 반영</li>
+      <li>x 클릭 시 해당 칩 삭제, 하단 영역 비활성화 (이전 설정값은 유지)</li>
+    </ul>
+    <br>
+    <p><strong>표시 문구:</strong> "칩을 드래그하여 순서를 변경하면 상단 Preview에 실시간 반영됩니다."</p>
+    <p style="margin-top:8px;"><strong>예시:</strong> YYYY - ##### - TR 순서 배치 → KR-SELTA-202500001TR</p>
+  </div>
+</section>
+
+<!-- 만료 알림 및 자동 확장 -->
+<section id="expire">
+  <div class="section-title">⚠️ Case ID 만료 임박 알림 & 자동 자릿수 확장</div>
+
+  <div class="card">
+    <div class="sub-title">만료 임박 알림 팝업</div>
+    <table>
+      <tr><th>항목</th><th>내용</th></tr>
+      <tr><td>노출 시점</td><td>케이스에 Case ID가 최종 부여된 순간 (Configuration 화면 아님)</td></tr>
+      <tr><td>노출 조건 (임계치)</td><td>남은 번호가 100개 이하일 때</td></tr>
+      <tr><td>기준 사유</td><td>시스템이 한 번에 최대 30개까지 병렬 처리 가능 → 충분한 버퍼 100개 지정</td></tr>
+      <tr><td>대상</td><td>해당 시스템을 사용하는 모든 사용자</td></tr>
+    </table>
+    <br>
+    <p><strong>팝업 내용:</strong> "현재 마지막으로 부여된 케이스 ID는 [Case ID]입니다. 최대 자릿수 [최대값]에 도달하면 번호 체계가 자동으로 확장되어 [New Case ID_1], [New Case ID_2] 순으로 계속해서 부여됩니다. 번호 중복이나 작업 중단 없이 정상적으로 처리되니 안심하고 사용하시기 바랍니다."</p>
+  </div>
+
+  <div class="card">
+    <div class="sub-title">팝업 닫기 로직</div>
+    <table>
+      <tr><th>동작</th><th>결과</th></tr>
+      <tr><td>Confirm 클릭</td><td>팝업 닫힘, 해당 사용자 다음 로그인 시 재노출</td></tr>
+      <tr><td>Do not show again 체크 + Confirm</td><td>해당 사용자에게 더 이상 미노출</td></tr>
+      <tr><td>자동 미노출</td><td>일련번호가 초과되어 새 자릿수 체계(1XXXXX...)로 넘어간 경우 기존 팝업 중단</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="sub-title">자릿수 자동 확장</div>
+    <ul>
+      <li>설정된 최대 자릿수를 초과하는 번호 필요 시 자릿수 한 자리 추가</li>
+      <li>번호 체계: 확장된 자릿수에서 '1XXXXX' 형식으로 시작</li>
+    </ul>
+    <br>
+    <table>
+      <tr><th>설정 자릿수</th><th>최종 번호</th><th>초과 시 첫 번호</th><th>이후 진행</th></tr>
+      <tr><td>5자리</td><td>99999</td><td>100000 (6자리 자동 확장)</td><td>100001, 100002 … 999999</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- Import 설정 -->
+<section id="import">
+  <div class="section-title">📥 Import 설정 — C.1.1 / C.1.8.1 처리 방식</div>
+
+  <div class="card">
+    <div class="sub-title">Import 옵션</div>
+    <table>
+      <tr><th>옵션</th><th>C.1.1 처리</th><th>C.1.8.1 처리</th><th>기본값</th></tr>
+      <tr><td>A. C.1.8.1만 유지</td><td>시스템 규칙에 따라 신규 부여</td><td>파일 내 데이터 그대로 사용</td><td>✅ 기본값</td></tr>
+      <tr><td>B. C.1.1, C.1.8.1 유지</td><td>파일 내 데이터 그대로 사용</td><td>파일 내 데이터 그대로 사용</td><td>-</td></tr>
+    </table>
+    <br>
+    <p><strong>적용 범위:</strong> Import 기능을 통해 케이스가 생성될 때만 적용 (추후 Convert에도 적용 예정)</p>
+    <br>
+    <div class="sub-title">C.1.1, C.1.8.1 동일 입력 설정</div>
+    <ul>
+      <li>C.1.8.1 값이 비어 있는 경우(Null)에 한해, C.1.1의 번호를 그대로 C.1.8.1에 복사하여 기입</li>
+      <li>목적: 기존에 부여된 고유 식별자가 있다면 보호하고, 없는 경우에만 자동 생성하여 편의성 높임</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ICSR 식별자 관리 -->
+<section id="icsr">
+  <div class="section-title">📋 ICSR 식별자 관리 사양서</div>
+
+  <div class="card">
+    <div class="sub-title">Case vs Report Level 노출 형식</div>
+    <table>
+      <tr><th>구분</th><th>노출 위치</th><th>표시 형식</th><th>예시</th></tr>
+      <tr><td>Case Level</td><td>Tracker List, Case의 Case ID</td><td>일련번호</td><td>202604ST001, 202604ST00002</td></tr>
+      <tr><td>Report Level</td><td>ICSR 보고서 (C.1.1, C.1.8.1)</td><td>국가-조직-일련번호</td><td>KR-SELTA-202604ST001</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="sub-title">생성 유형별 식별자 부여 로직</div>
+
+    <p style="font-weight:600; margin-bottom:8px;">매뉴얼 케이스 생성 (Initial)</p>
+    <ul>
+      <li>Case ID: Configuration 설정에 따른 순차적 일련번호 부여. 중복 체크 및 Follow-up 연결 기준</li>
+      <li>C.1.1 = C.1.8.1 동일</li>
+      <li>보고처(Destination) 확정 시점에 국가코드 결정 → [국가]-[회사]-[일련번호] 조합으로 생성</li>
+    </ul>
+    <br>
+    <p style="font-weight:600; margin-bottom:8px;">데이터 인입 (Import)</p>
+    <ul>
+      <li>Case ID: Configuration 설정에 따른 순차적 일련번호 부여</li>
+      <li>식별자: 인입된 파일 내 C.1.8.1 값 기반. 중복 체크 및 Follow-up 연결 기준</li>
+      <li>C.1.1: 보고처 확정 시점에 국가코드 결정, [국가]-[회사]-[일련번호] 생성</li>
+      <li>C.1.8.1: 파일 내 기재된 기존 값 그대로 유지</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 식별자 수정 정책 -->
+<section id="immutable">
+  <div class="section-title">🔒 식별자 수정 및 변경 정책</div>
+  <div class="card">
+    <table>
+      <tr><th>정책</th><th>내용</th></tr>
+      <tr><td>수정 불가 원칙</td><td>시스템에 의해 부여되는 즉시 수동 수정 절대 불가 (사용자 편집 권한 없음)</td></tr>
+      <tr><td>C.1.1 부여 대상</td><td>Initial 사례에만 부여</td></tr>
+      <tr><td>C.1.1 개별 수정</td><td>C.1.1은 개별 수정</td></tr>
+      <tr><td>Approval 이후</td><td>C.1.1, C.1.8.1 변경 불가 — 수정 버튼 비표시</td></tr>
+      <tr><td>Approval 이후 안내 문구</td><td>"Approval 상태 이후로는 보고자 관리번호(C.1.1)과 고유식별 보고자 관리번호(C.1.8.1) 수정이 불가합니다."</td></tr>
+      <tr><td>C.1.8.1 변경 불가</td><td>매뉴얼 및 교육에서 사전 고지</td></tr>
+    </table>
+  </div>
+</section>
+
+</div>
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,156 @@
+/* QA 분석 리포트 스타일 — plan-analyst 산출물 */
+:root {
+  --conflict: #dc3545;
+  --expr: #fd7e14;
+  --missing: #ffc107;
+  --confirm: #17a2b8;
+  --ok: #28a745;
+  --bg: #f8f9fa;
+}
+
+body { font-family: 'Pretendard', -apple-system, sans-serif; margin: 0; background: var(--bg); }
+
+.report-layout { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+
+/* 사이드바 */
+.sidebar {
+  background: #1a1a2e;
+  padding: 24px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  color: rgba(255,255,255,0.7);
+  cursor: pointer;
+  font-size: 0.9rem;
+  border-left: 3px solid transparent;
+}
+.sidebar-item:hover, .sidebar-item.active {
+  background: rgba(255,255,255,0.08);
+  color: white;
+  border-left-color: #4a9eff;
+}
+.sidebar-badge {
+  margin-left: auto;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 0.75rem;
+}
+.sidebar-badge.has-issue { background: var(--conflict); }
+
+/* 헤더 */
+.report-header { background: #1a1a2e; color: white; padding: 32px 40px; }
+.issue-cards { display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
+.card {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.95rem;
+}
+.card .count { font-size: 1.5rem; font-weight: bold; }
+.card.conflict { border-top: 3px solid var(--conflict); }
+.card.expr { border-top: 3px solid var(--expr); }
+.card.missing { border-top: 3px solid var(--missing); }
+.card.confirm { border-top: 3px solid var(--confirm); }
+.card.block { border-top: 3px solid #6c757d; }
+
+/* 메인 콘텐츠 */
+.main-content { padding: 32px 40px; }
+section { margin-bottom: 40px; scroll-margin-top: 20px; }
+.section-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e9ecef;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 이슈 카드 */
+.issue-card {
+  background: white;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  overflow: hidden;
+  border-left: 4px solid transparent;
+}
+.issue-card.severity-conflict { border-left-color: var(--conflict); }
+.issue-card.severity-expr     { border-left-color: var(--expr); }
+.issue-card.severity-missing  { border-left-color: var(--missing); }
+.issue-card.severity-confirm  { border-left-color: var(--confirm); }
+
+.issue-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  flex-wrap: wrap;
+}
+.issue-id { font-weight: 700; font-size: 0.85rem; color: #495057; }
+.severity-badge { font-size: 0.8rem; font-weight: 600; }
+.impact { font-size: 0.78rem; padding: 2px 8px; border-radius: 4px; background: #e9ecef; }
+.impact.high { background: #ffe0e0; color: var(--conflict); }
+.impact.medium { background: #fff3cd; color: #856404; }
+.impact.low { background: #d1ecf1; color: #0c5460; }
+.tc-impact.block { font-size: 0.78rem; padding: 2px 8px; border-radius: 4px; background: #f8d7da; color: #721c24; margin-left: auto; }
+
+.issue-body { padding: 16px; }
+.issue-title { font-weight: 600; font-size: 1rem; margin-bottom: 12px; }
+.doc-ref { margin-bottom: 10px; }
+.doc-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6c757d; }
+.doc-name { font-size: 0.85rem; color: #495057; margin-left: 6px; }
+blockquote.original-text {
+  margin: 6px 0 0 0;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-left: 3px solid #dee2e6;
+  font-size: 0.88rem;
+  color: #495057;
+  border-radius: 0 4px 4px 0;
+}
+.issue-desc { margin: 12px 0; font-size: 0.92rem; color: #343a40; }
+.action-box {
+  background: #e8f4fd;
+  border: 1px solid #bee5eb;
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  color: #0c5460;
+}
+
+/* 테스트 포인트 테이블 */
+.test-matrix { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+.test-matrix th { background: #343a40; color: white; padding: 10px 12px; text-align: left; }
+.test-matrix td { padding: 9px 12px; border-bottom: 1px solid #e9ecef; vertical-align: top; }
+.test-matrix tr:hover td { background: #f8f9fa; }
+.priority-high { color: var(--conflict); font-weight: 700; }
+.priority-medium { color: var(--expr); font-weight: 600; }
+.priority-low { color: #6c757d; }
+
+/* 유저 스토리 */
+.user-story { background: white; border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.story-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.role-badge { background: #1a1a2e; color: white; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; }
+.flow-step { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px dashed #e9ecef; font-size: 0.9rem; }
+.flow-step:last-child { border-bottom: none; }
+.step-no { font-weight: 700; color: #4a9eff; min-width: 24px; }
+.domain-note { background: #fff8c5; border-left: 3px solid #ffc107; padding: 8px 12px; border-radius: 0 4px 4px 0; font-size: 0.85rem; margin: 8px 0; }
+.edge-case-row td { background: #fff9f0; }
+
+/* 이슈 없음 */
+.no-issue { background: #d4edda; color: #155724; padding: 12px 16px; border-radius: 8px; font-size: 0.9rem; }

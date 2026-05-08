@@ -1,0 +1,430 @@
+folder_name,Testcase_Id,title,Preconditions,Test Steps,Expected Results,Priority,type,test scope,run_type,Memo,REQ_Id
+"PV > ICSR Config > Case ID > 접근 및 권한",TC-CASEID-001-001,Master Admin Case ID Configuration 접근 검증,"1. Master Admin 계정 존재
+2. Admin > ICSR Config > Case ID 메뉴 경로 확인","1. Master Admin 계정으로 로그인
+2. Admin > ICSR Config > Case ID 메뉴 클릭
+3. Case ID Configuration 화면 진입 확인","1. [Front] Case ID Configuration 화면 정상 표시됨
+2. [Front] 조직 식별자·Year·자릿수 등 설정 필드 편집 가능 상태
+3. [Front] 저장 버튼 활성화됨",High,Functional,"Regression,Smoke",Automation,"[권한] Master Admin 접근 허용. 기획서 2.1 접근 권한 명시",REQ-052
+"PV > ICSR Config > Case ID > 접근 및 권한",TC-CASEID-001-002,Org Admin Case ID Configuration 접근 검증,"1. Org Admin 계정 존재
+2. Admin > ICSR Config > Case ID 경로 확인","1. Org Admin 계정으로 로그인
+2. Admin > ICSR Config > Case ID 메뉴 클릭
+3. Case ID Configuration 화면 진입 확인","1. [Front] Case ID Configuration 화면 정상 표시됨
+2. [Front] 설정 필드 편집 가능 상태
+3. [Front] 저장 버튼 활성화됨",High,Functional,Regression,Automation,"[권한] Org Admin 접근 허용",REQ-052
+"PV > ICSR Config > Case ID > 접근 및 권한",TC-CASEID-002-001,Case Processor Case ID Configuration 접근 차단 검증,"1. Case Processor 역할 계정 존재
+2. Admin > ICSR Config > Case ID 경로 확인","1. Case Processor 계정으로 로그인
+2. Admin > ICSR Config > Case ID 메뉴 접근 시도","1. [Front] Case ID Configuration 화면 미표시 또는 접근 거부 메시지 표시
+2. [Front] 메뉴 항목 비활성화 또는 숨김 처리
+3. [Downstream] 설정 변경 불가",High,Negative,Regression,Automation,"[권한] Case Processor 접근 차단. 미인가 접근 검증",REQ-052
+"PV > ICSR Config > Case ID > 접근 및 권한",TC-CASEID-002-002,Safety Officer Case ID Configuration 접근 차단 검증,"1. Safety Officer 역할 계정 존재","1. Safety Officer 계정으로 로그인
+2. Admin > ICSR Config > Case ID 메뉴 접근 시도","1. [Front] Case ID Configuration 화면 미표시 또는 접근 거부
+2. [Front] 설정 변경 불가
+3. [Downstream] 없음",High,Negative,Regression,Automation,"[권한] Safety Officer 접근 차단",REQ-052
+"PV > ICSR Config > Case ID > 조직 식별자",TC-CASEID-003-001,조직 식별자 1글자 최솟값 정상 저장 검증,"1. Master Admin 또는 Org Admin으로 Configuration 화면 접근","1. 조직 식별자 필드에 영문 1글자(예: A) 입력
+2. 저장 버튼 클릭","1. [Front] 저장 성공 메시지 표시
+2. [Data] 조직 식별자 'A' 저장 확인
+3. [Downstream] 없음",High,Boundary,Regression,Automation,,REQ-006
+"PV > ICSR Config > Case ID > 조직 식별자",TC-CASEID-003-002,조직 식별자 10글자 최댓값 정상 저장 검증,"1. Master Admin 또는 Org Admin으로 Configuration 화면 접근","1. 조직 식별자 필드에 영숫자 10글자(예: SELTASQ001) 입력
+2. 저장 버튼 클릭","1. [Front] 저장 성공
+2. [Data] 10글자 조직 식별자 저장 확인
+3. [Downstream] 없음",High,Boundary,Regression,Automation,,REQ-006
+"PV > ICSR Config > Case ID > 조직 식별자",TC-CASEID-003-003,조직 식별자 대소문자 구분 저장 검증,"1. Configuration 화면 접근","1. 조직 식별자 'Selta' 입력 후 저장
+2. 저장값 확인
+3. 'SELTA'로 변경 후 저장
+4. 저장값 확인","1. [Front] 입력값 그대로 저장됨 (대소문자 변환 없음)
+2. [Data] 'Selta' ≠ 'SELTA' 별도 저장 확인
+3. [Downstream] 없음",Medium,Functional,Regression,Automation,,REQ-007
+"PV > ICSR Config > Case ID > 조직 식별자",TC-CASEID-003-004,저장된 조직 식별자 Case ID 반영 검증,"1. 조직 식별자 'SELTA' 저장 완료
+2. 케이스 생성 환경 준비","1. 매뉴얼 케이스 생성 진행
+2. 생성된 케이스의 Case ID 확인","1. [Front] Case ID에 'SELTA' 포함 확인
+2. [Data] C.1.1 값에 조직 식별자 포함됨
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-006
+"PV > ICSR Config > Case ID > 조직 식별자",TC-CASEID-004-001,조직 식별자 빈 값 저장 차단 검증,"1. Configuration 화면 접근
+2. 조직 식별자 필드 초기화","1. 조직 식별자 필드 빈 상태에서 저장 클릭","1. [Front] 저장 차단 및 필수 입력 안내 표시
+2. [Data] 기존 값 유지
+3. [Downstream] 없음",High,Negative,Regression,Automation,,REQ-006
+"PV > ICSR Config > Case ID > 조직 식별자",TC-CASEID-004-002,조직 식별자 11글자 초과 입력 차단 검증,"1. Configuration 화면 접근","1. 조직 식별자 필드에 11글자(예: SELTASQ0011) 입력 시도","1. [Front] 11번째 글자 입력 불가 또는 저장 차단
+2. [Front] (문구 확인 필요) 에러 메시지 표시
+3. [Data] 10글자 이하로 유지됨",High,Boundary,Regression,Automation,에러 메시지 문구 확인 필요 (참고용),REQ-006
+"PV > ICSR Config > Case ID > 조직 식별자",TC-CASEID-004-003,조직 식별자 특수문자 입력 차단 검증,"1. Configuration 화면 접근","1. 조직 식별자 필드에 '@' 입력 시도
+2. '-' 입력 시도","1. [Front] 특수문자 입력 불가 또는 저장 차단
+2. [Front] (문구 확인 필요) 에러 메시지 표시
+3. [Data] 영문/숫자 외 값 미저장됨",High,Negative,Regression,Automation,에러 메시지 문구 확인 필요 (참고용),REQ-007
+"PV > ICSR Config > Case ID > 조직 식별자",TC-CASEID-004-004,조직 식별자 한글 입력 차단 검증,"1. Configuration 화면 접근","1. 조직 식별자 필드에 한글(예: 셀타) 입력 시도","1. [Front] 한글 입력 불가 또는 저장 차단
+2. [Front] (문구 확인 필요) 에러 메시지 표시
+3. [Data] 영문/숫자 외 값 미저장됨",High,Negative,Regression,Automation,에러 메시지 문구 확인 필요 (참고용),REQ-007
+"PV > ICSR Config > Case ID > Year 설정",TC-CASEID-005-001,Year 2-digit 설정 후 Case ID 연도 2자리 표기 검증,"1. Configuration 화면 접근
+2. Year Chip 추가됨","1. Year = 2-digit(YY) 선택 후 저장
+2. 케이스 생성
+3. Case ID 확인","1. [Front] Case ID에 연도 뒤 2자리 포함됨 (예: 26XXXXXX)
+2. [Data] 연도 2자리 형식으로 저장
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-009
+"PV > ICSR Config > Case ID > Year 설정",TC-CASEID-005-002,Year 4-digit 설정 후 Case ID 연도 4자리 표기 검증,"1. Configuration 화면 접근
+2. Year Chip 추가됨","1. Year = 4-digit(YYYY) 선택 후 저장
+2. 케이스 생성
+3. Case ID 확인","1. [Front] Case ID에 연도 전체 4자리 포함됨 (예: 2026XXXXXX)
+2. [Data] 연도 4자리 형식으로 저장
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-010
+"PV > ICSR Config > Case ID > Year 설정",TC-CASEID-005-003,Year N/A 설정 후 연도 미표기 및 일련번호 누적 검증,"1. Configuration 화면 접근","1. Year = N/A 선택 후 저장
+2. 케이스 10건 생성 (연도 변경 전후)
+3. Case ID 확인","1. [Front] Case ID에 연도 미포함
+2. [Data] 연도 변경 후에도 일련번호 초기화 없이 누적 확인
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-011
+"PV > ICSR Config > Case ID > Year 설정",TC-CASEID-005-004,Year 2-digit/4-digit 연초 일련번호 리셋 정책 검증,"1. Year = 2-digit 또는 4-digit 설정 저장
+2. 시스템 날짜 조작 가능 환경","1. 12월 31일 23:59 케이스 생성 확인
+2. 1월 1일 00:00:01 케이스 생성
+3. 일련번호 확인","1. [Front] 새해 첫 케이스 일련번호 '00001'(자릿수 기준) 리셋 확인
+2. [Data] 전년도 번호와 신년도 번호 독립 관리
+3. [Downstream] 없음",High,Functional,Regression,Manual,,REQ-009
+"PV > ICSR Config > Case ID > Year 설정",TC-CASEID-006-001,Year 툴팁 노출 및 삭제 문구 미포함 검증,"1. Configuration 화면 접근
+2. Year 설정 영역 표시됨","1. Year 설정란 옆 툴팁 아이콘 클릭 또는 호버
+2. 툴팁 내용 확인","1. [Front] 툴팁 표시됨
+2. [Front] '연월 선택 시 매월 초에' 문구 미포함 확인 (CONFLICT-001 수정)
+3. [Downstream] 없음",Medium,Functional,Regression,Manual,CONFLICT-001 수정 반영 검증,REQ-012
+"PV > ICSR Config > Case ID > Year 설정",TC-CASEID-006-002,Year 툴팁 정확한 문구 표시 검증,"1. Configuration 화면 접근","1. Year 툴팁 내용 전체 텍스트 확인","1. [Front] 툴팁 문구: '연도 선택 시 매년 초에 일련번호가 00001로 초기화됩니다. N/A 선택 시(Chip을 추가하지 않았을 경우) 초기화 없이 번호가 계속 누적됩니다.' 포함
+2. [Downstream] 없음",Medium,Functional,Regression,Manual,,REQ-012
+"PV > ICSR Config > Case ID > Type of Report",TC-CASEID-007-001,Spontaneous 보고 유형 SP 구분자 Case ID 반영 검증,"1. TR Chip 추가 및 Configuration 저장
+2. 케이스 생성 환경","1. Type of Report = Spontaneous인 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 'SP' 포함
+2. [Data] TR 구분자 'SP' 저장 확인
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-013
+"PV > ICSR Config > Case ID > Type of Report",TC-CASEID-007-002,Report from Study 보고 유형 RS 구분자 반영 검증,"1. TR Chip 추가 및 Configuration 저장","1. Type of Report = Report from Study인 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 'RS' 포함
+2. [Data] 저장 확인",High,Functional,Regression,Automation,,REQ-013
+"PV > ICSR Config > Case ID > Type of Report",TC-CASEID-007-003,Other 보고 유형 OT 구분자 반영 검증,"1. TR Chip 추가 및 Configuration 저장","1. Type of Report = Other인 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 'OT' 포함
+2. [Data] 저장 확인",High,Functional,Regression,Automation,,REQ-013
+"PV > ICSR Config > Case ID > Type of Report",TC-CASEID-007-004,Not Available 보고 유형 UN 구분자 반영 검증,"1. TR Chip 추가 및 Configuration 저장","1. Type of Report = Not Available to Sender인 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 'UN' 포함
+2. [Data] 저장 확인",High,Functional,Regression,Automation,,REQ-013
+"PV > ICSR Config > Case ID > Type of Report",TC-CASEID-007-005,Configuration Preview 기본값 SP 노출 검증,"1. TR Chip 추가된 Configuration 화면 접근","1. Configuration 화면의 Case ID Preview 확인","1. [Front] Preview에 기본값 'SP' 표시됨
+2. [Downstream] 없음",Medium,Functional,Regression,Manual,,REQ-013
+"PV > ICSR Config > Case ID > Product Abbreviation",TC-CASEID-008-001,제품 있는 케이스 PRD 약어 포함 검증,"1. PRD Chip 추가 및 Configuration 저장
+2. Product Config에 약어 'SELTA' 등록","1. 제품 불러오기로 등록 제품 포함 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 제품 약어 'SELTA' 포함
+2. [Data] PRD 약어 저장 확인
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-014
+"PV > ICSR Config > Case ID > Product Abbreviation",TC-CASEID-008-002,제품 없는 케이스 UNK 포함 검증,"1. PRD Chip 추가 및 Configuration 저장","1. 제품 불러오기 미사용 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 'UNK' 포함
+2. [Data] PRD 위치에 'UNK' 저장 확인
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-015
+"PV > ICSR Config > Case ID > Product Abbreviation",TC-CASEID-008-003,PRD Chip 미포함 시 PRD 값 미표시 검증,"1. PRD Chip 미포함 Configuration 저장","1. 케이스 생성
+2. Case ID에 PRD 값 포함 여부 확인","1. [Front] Case ID에 PRD 값(약어 또는 UNK) 미포함
+2. [Data] 없음",High,Negative,Regression,Automation,,REQ-014
+"PV > ICSR Config > Case ID > Product Abbreviation",TC-CASEID-009-001,Suspect 자사 제품 2개 시 첫 번째 약어 표시 검증,"1. PRD Chip 추가 및 Configuration 저장
+2. Product Config에 자사 제품 약어 'AAA', 'BBB' 등록 (순서 1: AAA, 순서 2: BBB)","1. Suspect 자사 제품 2개(AAA, BBB) 포함 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 첫 번째 약어 'AAA'만 포함
+2. [Data] 'BBB' 미표시 확인
+3. [Downstream] 없음",Medium,Functional,Regression,Automation,,REQ-016
+"PV > ICSR Config > Case ID > Product Abbreviation",TC-CASEID-009-002,제품 순서 변경 후 새 첫 번째 약어 반영 검증,"1. 자사 제품 순서 1번을 'BBB'로 변경 후 저장","1. 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 현재 순서 1번 약어 'BBB' 포함
+2. [Data] 순서 기준 첫 번째 약어 적용됨",Medium,Functional,Regression,Automation,,REQ-016
+"PV > ICSR Config > Case ID > 자유 텍스트",TC-CASEID-010-001,자유 텍스트 블록 활성화 및 값 입력 검증,"1. TXT Chip 추가된 Configuration 화면 접근","1. 자유 텍스트 체크박스 선택
+2. Custom Text 블록 활성화 확인
+3. 텍스트 'STUDY' 입력","1. [Front] 체크박스 선택 시 Custom Text 블록 활성화됨
+2. [Front] 'STUDY' 입력 가능
+3. [Downstream] 없음",High,Functional,Regression,Manual,,REQ-017
+"PV > ICSR Config > Case ID > 자유 텍스트",TC-CASEID-010-002,자유 텍스트 저장 후 Case ID 반영 검증,"1. 자유 텍스트 'STUDY' 입력 후 저장 완료","1. 케이스 생성
+2. Case ID 확인","1. [Front] Case ID에 'STUDY' 포함
+2. [Data] 자유 텍스트 값 반영 저장됨
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-017
+"PV > ICSR Config > Case ID > 자유 텍스트",TC-CASEID-010-003,TXT Chip Drag and Drop 순서 변경 검증,"1. TXT Chip 및 다른 Chip(Year 등) 추가된 Configuration 화면","1. TXT Chip을 드래그하여 Year Chip 앞으로 이동
+2. Preview 확인","1. [Front] Drag & Drop 동작 가능
+2. [Front] Preview가 변경된 순서 실시간 반영
+3. [Downstream] 없음",Medium,Functional,Regression,Manual,,REQ-017
+"PV > ICSR Config > Case ID > 자유 텍스트",TC-CASEID-011-001,자유 텍스트 6글자 최댓값 정상 저장 검증,"1. TXT Chip 추가 후 Custom Text 블록 활성화","1. 자유 텍스트 필드에 6글자 영문(ABCDEF) 입력
+2. 저장","1. [Front] 저장 성공
+2. [Data] 6글자 텍스트 저장됨
+3. [Downstream] 없음",High,Boundary,Regression,Automation,,REQ-018
+"PV > ICSR Config > Case ID > 자유 텍스트",TC-CASEID-011-002,자유 텍스트 7글자 초과 입력 차단 검증,"1. TXT Chip 추가 후 Custom Text 블록 활성화","1. 자유 텍스트 필드에 7글자 입력 시도(ABCDEFG)","1. [Front] 7번째 글자 입력 불가 또는 저장 차단
+2. [Front] (문구 확인 필요) 에러 메시지 표시
+3. [Data] 6글자 이하로 유지",High,Boundary,Regression,Automation,에러 메시지 문구 확인 필요 (참고용),REQ-018
+"PV > ICSR Config > Case ID > 자유 텍스트",TC-CASEID-011-003,자유 텍스트 특수문자 입력 차단 검증,"1. Custom Text 블록 활성화","1. 특수문자('@', '-') 입력 시도","1. [Front] 특수문자 입력 불가 또는 저장 차단
+2. [Front] (문구 확인 필요) 에러 메시지 표시
+3. [Data] 영문/숫자 외 미저장",High,Negative,Regression,Automation,에러 메시지 문구 확인 필요 (참고용),REQ-018
+"PV > ICSR Config > Case ID > 자유 텍스트",TC-CASEID-011-004,자유 텍스트 한글 입력 차단 검증,"1. Custom Text 블록 활성화","1. 한글(연구) 입력 시도","1. [Front] 한글 입력 불가 또는 저장 차단
+2. [Front] (문구 확인 필요) 에러 메시지 표시
+3. [Data] 미저장",High,Negative,Regression,Automation,에러 메시지 문구 확인 필요 (참고용),REQ-018
+"PV > ICSR Config > Case ID > 일련번호 자릿수",TC-CASEID-012-001,자릿수 3 선택 후 Zero-padding 001 생성 검증,"1. Configuration 화면 접근","1. 자릿수 드롭다운에서 3 선택 후 저장
+2. 케이스 첫 번째 생성
+3. Case ID 일련번호 부분 확인","1. [Front] Case ID에 3자리 Zero-padding '001' 포함
+2. [Data] 일련번호 3자리 형식 저장
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-019
+"PV > ICSR Config > Case ID > 일련번호 자릿수",TC-CASEID-012-002,자릿수 5 선택 후 Zero-padding 00001 생성 검증,"1. Configuration 화면 접근","1. 자릿수 5 선택 후 저장
+2. 케이스 생성
+3. Case ID 일련번호 확인","1. [Front] Case ID에 '00001' 포함
+2. [Data] 5자리 Zero-padding 저장
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-019
+"PV > ICSR Config > Case ID > 일련번호 자릿수",TC-CASEID-012-003,자릿수 9 선택 후 Zero-padding 000000001 생성 검증,"1. Configuration 화면 접근","1. 자릿수 9 선택 후 저장
+2. 케이스 생성
+3. Case ID 일련번호 확인","1. [Front] Case ID에 '000000001' 포함
+2. [Data] 9자리 Zero-padding 저장
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-020
+"PV > ICSR Config > Case ID > 일련번호 자릿수",TC-CASEID-013-001,자릿수 변경 후 신규 케이스 새 자릿수 적용 검증,"1. 자릿수 5 설정 및 케이스 5건(00001~00005) 생성
+2. 자릿수 7로 변경 저장","1. 자릿수 변경 후 신규 케이스 생성
+2. Case ID 일련번호 부분 확인","1. [Front] 신규 케이스 일련번호 7자리 형식(0000006) 확인
+2. [Data] 7자리 자릿수 적용됨
+3. [Downstream] 없음",High,Functional,"Regression,Integration",Automation,,REQ-021
+"PV > ICSR Config > Case ID > 일련번호 자릿수",TC-CASEID-013-002,자릿수 변경 후 기존 케이스 자릿수 유지 검증,"1. 자릿수 5 설정 케이스 00001~00005 존재
+2. 자릿수 7로 변경 저장","1. 기존 케이스(00001~00005) Tracker에서 확인
+2. Case ID 일련번호 형식 확인","1. [Front] 기존 케이스 일련번호 여전히 5자리 형식(00001 등) 유지
+2. [Data] 소급 변경 없음 확인
+3. [Downstream] 없음",High,Functional,"Regression,Integration",Automation,"[데이터] 자릿수 변경 소급 없음 정책 검증",REQ-054
+"PV > ICSR Config > Case ID > 일련번호 자릿수",TC-CASEID-013-003,자릿수 변경 소급 적용 없음 검증,"1. 자릿수 5 → 7 변경 완료","1. Tracker에서 전체 케이스 목록 조회
+2. 변경 전 케이스 포맷 확인","1. [Front] 변경 전 케이스: 기존 5자리 그대로
+2. [Front] 변경 후 케이스: 새 7자리 적용
+3. [Data] 이력 분리 확인",High,Negative,"Regression,Integration",Automation,"[데이터] 데이터 일관성 검증",REQ-054
+"PV > ICSR Config > Case ID > 시작 번호",TC-CASEID-014-001,시작 번호 입력 후 첫 케이스 번호 적용 검증,"1. 자릿수 5 설정 완료
+2. 기존 케이스 없는 상태","1. 시작 번호 '25' 입력 후 저장
+2. 첫 케이스 생성
+3. Case ID 일련번호 확인","1. [Front] 첫 케이스 일련번호 '00025' 확인
+2. [Data] 시작 번호 설정 적용됨
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-022
+"PV > ICSR Config > Case ID > 시작 번호",TC-CASEID-014-002,시작 번호 미입력 커서 아웃 시 강제 1 기입 검증,"1. Configuration 화면 접근","1. 시작 번호 필드 클릭 후 값 삭제
+2. 필드 외부 클릭(커서 아웃)
+3. 필드값 확인","1. [Front] 필드값 자동으로 '1' 기입됨
+2. [Data] 없음",High,Functional,Regression,Automation,,REQ-023
+"PV > ICSR Config > Case ID > 시작 번호",TC-CASEID-014-003,저장 후 즉시 다음 케이스 시작 번호 적용 검증,"1. 시작 번호 '100' 저장 완료","1. 저장 직후 케이스 생성
+2. Case ID 확인","1. [Front] 즉시 적용 — 첫 케이스 일련번호 '00100'(5자리 기준)
+2. [Data] 적용됨",High,Functional,Regression,Automation,,REQ-022
+"PV > ICSR Config > Case ID > 시작 번호",TC-CASEID-015-001,시작 번호 최대임계치 정상 입력 검증,"1. 자릿수 5 설정 (최대값 99999, 임계치 99599)","1. 시작 번호 '99599' 입력
+2. 저장","1. [Front] 정상 저장됨 (경계값 정상)
+2. [Data] 99599 저장 확인
+3. [Downstream] 없음",High,Boundary,Regression,Automation,,REQ-025
+"PV > ICSR Config > Case ID > 시작 번호",TC-CASEID-015-002,시작 번호 최대임계치 초과 입력 차단 검증,"1. 자릿수 5 설정 (임계치 99599)","1. 시작 번호 '99600' 입력 시도","1. [Front] 입력 불가 처리 또는 저장 차단
+2. [Front] 오류 문구 미노출 확인 (기획서 명시: 오류 문구 없음)
+3. [Data] 99599 초과값 미저장",High,Boundary,Regression,Automation,,REQ-025
+"PV > ICSR Config > Case ID > 시작 번호",TC-CASEID-016-001,최후 번호보다 작은 시작 번호 차단 검증,"1. 케이스 00001~00006 생성 완료 (최후 번호 6)","1. 시작 번호 '5' 입력 후 저장 시도","1. [Front] 저장 차단
+2. [Front] 최후 번호보다 작은 값 설정 불가 안내
+3. [Data] 기존 시작 번호 유지",High,Negative,Regression,Automation,,REQ-024
+"PV > ICSR Config > Case ID > 시작 번호",TC-CASEID-016-002,최후 번호와 동일한 시작 번호 차단 검증,"1. 케이스 00001~00006 생성 완료","1. 시작 번호 '6' 입력 후 저장 시도","1. [Front] 저장 차단
+2. [Front] 최후 번호와 동일한 값 설정 불가 안내
+3. [Data] 기존 시작 번호 유지",High,Negative,Regression,Automation,,REQ-024
+"PV > ICSR Config > Case ID > 시작 번호",TC-CASEID-016-003,최후 번호+1 시작 번호 저장 성공 검증,"1. 케이스 00001~00006 생성 완료","1. 시작 번호 '7' 입력 후 저장
+2. 케이스 생성
+3. Case ID 확인","1. [Front] 저장 성공
+2. [Front] 다음 케이스 '00007' 생성됨
+3. [Data] 시작 번호 7 저장 및 적용됨",High,Functional,Regression,Automation,,REQ-024
+"PV > ICSR Config > Case ID > 포맷 설정",TC-CASEID-017-001,Chip 추가 시 해당 설정 영역 활성화 검증,"1. Configuration 화면 접근 (Chip 없는 초기 상태)","1. Year Chip 추가
+2. Year 설정 영역 상태 확인
+3. TR Chip 추가 후 TR 설정 영역 확인","1. [Front] Year Chip 추가 시 Year 설정 영역 즉시 활성화
+2. [Front] TR Chip 추가 시 TR 설정 영역 활성화
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Manual,,REQ-028
+"PV > ICSR Config > Case ID > 포맷 설정",TC-CASEID-017-002,Chip X 삭제 시 설정 영역 비활성화 및 설정값 유지 검증,"1. Year Chip 추가 후 Year = 4-digit 설정된 상태","1. Year Chip의 X 버튼 클릭 (삭제)
+2. Year 설정 영역 상태 확인
+3. 삭제된 설정값 확인","1. [Front] Year 설정 영역 비활성화됨
+2. [Data] 이전 설정값(4-digit) 내부적으로 유지됨 (재추가 시 복원)
+3. [Downstream] 없음",High,Functional,Regression,Manual,,REQ-029
+"PV > ICSR Config > Case ID > 포맷 설정",TC-CASEID-017-003,Chip 재추가 시 이전 설정값 복원 검증,"1. Year Chip 삭제 전 Year = 4-digit 설정 완료
+2. Year Chip 삭제됨","1. Year Chip 재추가
+2. Year 설정 영역 확인","1. [Front] Year 설정값 4-digit으로 복원됨
+2. [Data] 이전 설정값 유지 확인",Medium,Functional,Regression,Manual,,REQ-029
+"PV > ICSR Config > Case ID > 포맷 설정",TC-CASEID-018-001,Chip 순서 변경 후 Preview 실시간 반영 검증,"1. YYYY Chip, TR Chip, ##### Chip 추가된 상태 (기본 순서: YYYY-#####-TR)","1. TR Chip을 YYYY Chip 앞으로 드래그
+2. Preview 즉시 확인","1. [Front] Preview 즉시 'TR-YYYY-#####' 순서로 업데이트됨
+2. [Downstream] 없음",High,Functional,"Regression,Smoke",Manual,,REQ-026
+"PV > ICSR Config > Case ID > 포맷 설정",TC-CASEID-018-002,Chip 순서 변경 저장 후 케이스 생성 반영 검증,"1. TR-YYYY-##### 순서로 변경 저장 완료","1. 케이스 생성
+2. Case ID 확인","1. [Front] Case ID가 TR-YYYY-일련번호 순서로 생성됨
+2. [Data] 변경된 순서 적용 확인
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-026
+"PV > ICSR Config > Case ID > 포맷 설정",TC-CASEID-019-001,Year N/A 및 TR 미체크 시 포맷 영역 비활성화 검증,"1. Configuration 화면 접근","1. Year = N/A 선택
+2. Type of Report 모두 미체크
+3. 포맷 설정(Drag & Drop) 영역 상태 확인","1. [Front] 포맷 설정 영역 비활성화됨 (Drag & Drop 불가)
+2. [Downstream] 없음",Medium,Functional,Regression,Manual,,REQ-027
+"PV > ICSR Config > Case ID > 포맷 설정",TC-CASEID-019-002,Year 변경 시 포맷 영역 즉시 활성화 검증,"1. Year N/A + TR 미체크 상태 (포맷 영역 비활성화)","1. Year = 2-digit으로 변경
+2. 포맷 설정 영역 상태 확인","1. [Front] 포맷 설정 영역 즉시 활성화됨
+2. [Downstream] 없음",Medium,Functional,Regression,Manual,,REQ-027
+"PV > ICSR Config > Case ID > 포맷 설정",TC-CASEID-019-003,Year N/A + TR 체크 시 포맷 영역 활성화 검증,"1. Year N/A 설정, TR Chip 추가됨","1. Type of Report 체크박스 1개 이상 체크
+2. 포맷 설정 영역 상태 확인","1. [Front] 포맷 설정 영역 활성화됨
+2. [Downstream] 없음",Medium,Functional,Regression,Manual,,REQ-027
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-020-001,잔여 100개 이하 케이스 생성 직후 팝업 노출 검증,"1. 자릿수 5, 시작 번호 99900 설정 완료
+2. 케이스 99900번까지 생성 (잔여 99건 상태)","1. 추가 케이스 1건 생성
+2. 팝업 노출 여부 확인","1. [Front] 케이스 생성 직후 만료 임박 팝업 즉시 표시됨
+2. [Front] Configuration 화면이 아닌 케이스 생성 화면에서 노출
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Manual,,REQ-030
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-020-002,만료 임박 팝업 내용 정확성 검증,"1. 잔여 100개 이하 상태 팝업 노출됨","1. 팝업 내용 전체 확인","1. [Front] 현재 마지막 Case ID 정확히 표시됨
+2. [Front] 최대값 정확히 표시됨
+3. [Front] New Case ID_1, New Case ID_2 예시 정확히 표시됨",High,Functional,Regression,Manual,,REQ-031
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-020-003,잔여 101개 케이스 생성 시 팝업 미노출 검증,"1. 자릿수 5, 시작 번호 99899 설정
+2. 케이스 생성으로 잔여 101개 상태 만들기","1. 케이스 1건 생성 (잔여 101 → 100)
+2. 팝업 미노출 확인","1. [Front] 팝업 미노출 (잔여 101개는 경계값 이상)
+2. [Downstream] 없음",High,Boundary,Regression,Automation,,REQ-030
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-021-001,팝업 Confirm 클릭 후 팝업 닫힘 검증,"1. 만료 임박 팝업 노출 상태","1. 팝업 [Confirm] 버튼 클릭
+2. 팝업 상태 확인","1. [Front] 팝업 즉시 닫힘
+2. [Downstream] 없음",High,Functional,Regression,Manual,,REQ-033
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-021-002,Confirm 후 재로그인 시 팝업 재노출 검증,"1. 팝업 [Confirm] 클릭 완료
+2. 잔여 번호 여전히 100개 이하","1. 로그아웃 후 재로그인
+2. 케이스 생성
+3. 팝업 노출 여부 확인","1. [Front] 팝업 재노출됨
+2. [Downstream] 없음",High,Functional,Regression,Manual,,REQ-033
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-021-003,세션 만료 후 재접속 시 팝업 재노출 검증,"1. 팝업 Confirm 완료
+2. 잔여 번호 100개 이하","1. 세션 만료 대기 (또는 세션 강제 만료)
+2. 재접속 후 케이스 생성
+3. 팝업 노출 확인","1. [Front] 세션 만료 후 재접속에도 팝업 재노출됨 (명시적 로그아웃 없이도)
+2. [Downstream] 없음",High,Functional,Regression,Manual,"[세션] 세션 만료 포함 팝업 재노출 정책 (CONFIRM-004 결정)",REQ-033
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-022-001,Do not show again 설정 후 팝업 미노출 검증,"1. 만료 임박 팝업 노출 상태","1. [Do not show again] 체크박스 선택
+2. [Confirm] 클릭
+3. 로그아웃 후 재로그인
+4. 케이스 생성 후 팝업 확인","1. [Front] 재로그인 후 케이스 생성 시 팝업 미노출
+2. [Data] 사용자 설정 저장됨
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Manual,,REQ-034
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-022-002,Do not show again 설정이 다른 사용자에게 미영향 검증,"1. 사용자 A: Do not show again 설정 완료
+2. 사용자 B: 설정 안 됨
+3. 잔여 번호 100개 이하","1. 사용자 B 계정으로 로그인
+2. 케이스 생성
+3. 팝업 확인","1. [Front] 사용자 B에게 팝업 정상 노출됨
+2. [Data] 사용자별 독립 설정 확인
+3. [Downstream] 없음",Medium,Functional,Regression,Manual,,REQ-034
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-023-001,자릿수 자동 확장 후 Do not show again 초기화 및 팝업 재노출 검증,"1. 5자리 체계에서 Do not show again 설정 완료
+2. 자릿수 6자리로 자동 확장 발생 (99999 이후 100000 생성)
+3. 6자리 체계 잔여 100개 이하 상태","1. 6자리 체계에서 케이스 생성
+2. 팝업 노출 여부 확인","1. [Front] 5자리 체계의 Do not show again 설정 초기화됨
+2. [Front] 6자리 체계의 팝업 재노출됨
+3. [Data] 새 자릿수 체계 기준 팝업 노출",High,Functional,"Regression,Smoke",Manual,,REQ-055
+"PV > ICSR Config > Case ID > 만료 임박 알림",TC-CASEID-023-002,자동 확장 후 팝업 내용 새 자릿수 기준 업데이트 검증,"1. 6자리 체계로 자동 확장 완료
+2. 팝업 노출 상태","1. 팝업 내용 확인","1. [Front] 팝업 내용이 6자리 체계 기준으로 업데이트됨
+2. [Front] 5자리 체계 값 미표시",Medium,Functional,Regression,Manual,,REQ-055
+"PV > ICSR Config > Case ID > 자동 자릿수 확장",TC-CASEID-024-001,최대 자릿수 소진 후 6자리 자동 확장 채번 검증,"1. 자릿수 5 설정, 99999번까지 채번된 상태","1. 케이스 1건 추가 생성
+2. Case ID 일련번호 확인","1. [Front] 일련번호 '100000' (6자리) 자동 생성됨
+2. [Data] 6자리 체계로 자동 전환
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-035
+"PV > ICSR Config > Case ID > 자동 자릿수 확장",TC-CASEID-024-002,자동 확장 후 연속 채번 정상 동작 검증,"1. 자릿수 5 → 6 자동 확장 완료 (현재 100000 상태)","1. 케이스 2건 추가 생성
+2. Case ID 확인","1. [Front] 100001, 100002 순서로 정상 채번됨
+2. [Data] 연속성 유지",High,Functional,Regression,Automation,,REQ-035
+"PV > ICSR Config > Case ID > 자동 자릿수 확장",TC-CASEID-024-003,자릿수 확장 발생 시 모달 노출 및 만료 임박 팝업 중단 검증,"1. 잔여 번호 100개 이하 팝업이 활성화된 상태
+2. 99999번까지 채번된 상태","1. 케이스 생성 (자동 확장 트리거)
+2. 모달 및 기존 팝업 상태 확인","1. [Front] 자릿수 확장 발생 시 모달 노출됨
+2. [Front] 5자리 체계 만료 임박 팝업 노출 중단됨
+3. [Front] 외부 알림(이메일/SMS 등) 없음 확인",High,Functional,Regression,Manual,,REQ-036
+"PV > ICSR Config > Case ID > Import 설정",TC-CASEID-025-001,Import 옵션 A 후 C.1.1 신규 부여 검증,"1. Import 옵션 A(기본값) 설정 저장
+2. C.1.8.1 포함 Import 파일 준비","1. Import 파일 업로드 실행
+2. 생성된 케이스의 C.1.1 확인","1. [Front] C.1.1: 시스템 Configuration 규칙에 따라 새 번호 부여됨
+2. [Data] 파일 내 C.1.1 값 미사용 확인
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-037
+"PV > ICSR Config > Case ID > Import 설정",TC-CASEID-025-002,Import 옵션 A 후 C.1.8.1 파일 내 값 유지 검증,"1. Import 옵션 A 설정 완료
+2. 특정 C.1.8.1 값 포함 파일 준비","1. Import 실행
+2. 케이스 C.1.8.1 확인","1. [Front] C.1.8.1: 파일 내 원본 값 그대로 유지됨
+2. [Data] 파일 값 덮어쓰기 없음
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-039
+"PV > ICSR Config > Case ID > Import 설정",TC-CASEID-025-003,Import 설정이 매뉴얼 케이스에 미적용 검증,"1. Import 옵션 A 설정 완료","1. 매뉴얼 케이스 생성
+2. C.1.1, C.1.8.1 확인","1. [Front] C.1.1: 시스템 자동 부여 (Import 옵션 관계없음)
+2. [Data] Import 설정이 매뉴얼 케이스에 영향 없음
+3. [Downstream] 없음",Medium,Functional,Regression,Automation,,REQ-037
+"PV > ICSR Config > Case ID > Import 설정",TC-CASEID-026-001,Import 옵션 B 정상 C.1.1과 C.1.8.1 파일 내 값 적용 검증,"1. Import 옵션 B 설정 저장
+2. 고유한 C.1.1 값 포함 Import 파일 준비","1. Import 파일 업로드 실행
+2. C.1.1, C.1.8.1 확인","1. [Front] C.1.1: 파일 내 값 그대로 사용됨
+2. [Front] C.1.8.1: 파일 내 값 그대로 사용됨
+3. [Downstream] Tracker에서 케이스 조회 가능",High,Functional,"Regression,Smoke",Automation,,REQ-038
+"PV > ICSR Config > Case ID > Import 설정",TC-CASEID-026-002,Import 옵션 B 성공 후 Tracker 케이스 조회 검증,"1. Import 옵션 B로 케이스 Import 성공","1. Tracker 메뉴 진입
+2. Import된 케이스 검색 및 확인","1. [Front] Tracker에서 Import 케이스 정상 조회됨
+2. [Data] 데이터 무결성 확인
+3. [Downstream] 없음",High,Functional,Regression,Automation,,REQ-039
+"PV > ICSR Config > Case ID > Import 설정",TC-CASEID-027-001,Import 옵션 B C.1.1 중복 시 Import 실패 검증,"1. 시스템에 C.1.1 = 'KR-SELTA-00001' 케이스 존재
+2. Import 옵션 B 설정
+3. 동일 C.1.1 값 포함 Import 파일 준비","1. 중복 C.1.1 포함 파일 Import 실행
+2. Import 결과 확인","1. [Front] Import 실패 처리됨
+2. [Front] (문구 확인 필요) 오류 메시지 표시됨
+3. [Data] 기존 케이스 데이터 변경 없음 확인",High,Negative,"Regression,Smoke",Automation,오류 메시지 문구 확인 필요 (참고용),REQ-038
+"PV > ICSR Config > Case ID > Import 설정",TC-CASEID-027-002,Import 실패 후 기존 케이스 데이터 무결성 검증,"1. C.1.1 중복으로 Import 실패 발생","1. 기존 케이스(KR-SELTA-00001) 상세 조회
+2. 모든 필드 값 확인","1. [Front] 기존 케이스 데이터 변경 없음
+2. [Data] Import 실패 시 롤백 또는 미반영 확인
+3. [Downstream] 없음",High,Negative,"Regression,Integration",Automation,"[데이터] Import 실패 시 데이터 무결성 검증",REQ-038
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-028-001,국가코드 우선순위 1 Reporter Primary 적용 검증,"1. C.5.2 Reporter's Country Code (Primary) = 'US' 케이스 준비","1. 케이스 Destination 확정
+2. C.1.1, C.1.8.1 확인","1. [Front] 국가코드 'US' 적용됨
+2. [Data] Reporter Primary 코드 우선 적용
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-005
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-028-002,국가코드 우선순위 2 Reporter First 적용 검증,"1. Reporter Primary 없음, Reporter First = 'JP' 케이스","1. Destination 확정
+2. C.1.1 국가코드 확인","1. [Front] 국가코드 'JP' 적용됨
+2. [Data] 우선순위 2 적용",High,Functional,Regression,Automation,,REQ-005
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-028-003,국가코드 우선순위 3 발생국 Primary 적용 검증,"1. Reporter 코드 없음, 발생국 Primary = 'DE' 케이스","1. Destination 확정
+2. C.1.1 국가코드 확인","1. [Front] 국가코드 'DE' 적용됨
+2. [Data] 우선순위 3 적용",High,Functional,Regression,Automation,,REQ-005
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-028-004,국가코드 우선순위 4 발생국 First 적용 검증,"1. Reporter 코드 없음, 발생국 Primary 없음, 발생국 First = 'FR' 케이스","1. Destination 확정
+2. C.1.1 국가코드 확인","1. [Front] 국가코드 'FR' 적용됨
+2. [Data] 우선순위 4 적용",High,Functional,Regression,Automation,,REQ-005
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-028-005,국가코드 우선순위 5 기본값 KR 적용 검증,"1. 모든 국가코드 필드 Null인 케이스","1. Destination 확정
+2. C.1.1 국가코드 확인","1. [Front] 국가코드 기본값 'KR' 적용됨
+2. [Data] Fallback 'KR' 확인",High,Functional,Regression,Automation,,REQ-005
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-029-001,Tracker Case ID 일련번호 형식 노출 검증,"1. 케이스 생성 완료 (Destination 확정)","1. Tracker List 화면 접근
+2. Case ID 컬럼 값 확인","1. [Front] Case ID 컬럼: 일련번호 형식만 표시 (예: 202604ST001)
+2. [Front] 국가-조직 접두사 미표시
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,,REQ-004
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-029-002,Case Edit 화면 Case ID 일련번호 형식 노출 검증,"1. 케이스 생성 완료","1. Case Edit 화면 진입
+2. Case ID 필드 값 확인","1. [Front] Case ID 필드: 일련번호 형식만 표시
+2. [Front] 국가-조직 접두사 미표시",High,Functional,Regression,Automation,,REQ-041
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-029-003,ICSR 보고서 C.1.1 C.1.8.1 전체 형식 노출 검증,"1. 케이스 생성 및 Destination 확정 완료","1. ICSR 보고서 > C.1.1 필드 확인
+2. C.1.8.1 필드 확인","1. [Front] C.1.1: 국가-조직-일련번호 전체 형식 (예: KR-SELTA-202604ST001)
+2. [Front] C.1.8.1: 동일 형식
+3. [Data] 전체 식별자 저장됨",High,Functional,"Regression,Smoke",Automation,,REQ-042
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-030-001,C.1.8.1 Null 시 C.1.1 값 자동 복사 검증,"1. C.1.8.1이 비어 있는 케이스 준비 (Destination 미확정)","1. Destination 확정
+2. C.1.8.1 값 확인","1. [Front] C.1.8.1에 C.1.1 값이 자동 복사됨
+2. [Data] C.1.1 = C.1.8.1 확인
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Automation,"[데이터] C.1.8.1 Null 시 자동 복사 정책",REQ-040
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-030-002,C.1.8.1 기존 값 있을 때 C.1.1 덮어쓰기 미발생 검증,"1. C.1.8.1 = 'KR-EXT-00001' (기존 값) 케이스 준비","1. Destination 확정 또는 시스템 자동 처리
+2. C.1.8.1 값 확인","1. [Front] C.1.8.1: 기존 'KR-EXT-00001' 유지됨 (C.1.1 값으로 덮어쓰기 없음)
+2. [Data] 기존 값 보존 확인",High,Negative,Regression,Automation,"[데이터] 덮어쓰기 방지 정책",REQ-040
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-031-001,매뉴얼 케이스 생성 시 Case ID 자동 부여 E2E 검증,"1. Configuration 완료 (Year=4-digit, 조직식별자=SELTA, 자릿수=5)
+2. 매뉴얼 케이스 생성 권한 계정","1. 매뉴얼 케이스 생성 화면 접근
+2. 필수 정보 입력 후 저장
+3. Case ID 확인 (Edit/Tracker)","1. [Front] Case ID 자동 부여됨 (예: 2026STSP00001)
+2. [Front] Tracker 및 Case Edit에서 일련번호 형식 표시
+3. [Data] Configuration 설정 적용 확인",High,Functional,"Regression,E2E,Smoke",Automation,"[연계] Config → 케이스 생성 연동. [데이터] Case ID 생성-저장 E2E",REQ-001
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-031-002,매뉴얼 케이스 Destination 확정 후 C.1.1 C.1.8.1 형식 검증,"1. 매뉴얼 케이스 생성 완료 (Case ID 부여됨)","1. Destination 확정 처리
+2. C.1.1, C.1.8.1 확인","1. [Front] C.1.1 = 'KR-SELTA-2026STSP00001' 형식
+2. [Front] C.1.8.1 = C.1.1과 동일 (Null → 자동 복사)
+3. [Data] 전체 식별자 저장됨",High,Functional,"Regression,Integration",Automation,"[연계] Destination 확정 → 식별자 생성 연동",REQ-002
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-031-003,매뉴얼 케이스 생성 Regression E2E 전체 흐름 검증,"1. Configuration 설정 완료
+2. 케이스 생성 환경","1. Configuration 저장 → 케이스 생성 → Destination 확정 → Tracker 확인 → ICSR 보고서 C.1.1/C.1.8.1 확인","1. [Front] 각 단계 정상 처리됨
+2. [Front] Tracker: 일련번호 형식, ICSR: 전체 형식 표시됨
+3. [Data] 모든 식별자 정합성 확인
+4. [Downstream] ICSR 제출 준비 상태",Critical,Functional,"Regression,E2E,Smoke,Integration",Manual,"[연계] Case ID 생성부터 ICSR 보고서까지 전체 데이터 흐름. [데이터] 전 단계 식별자 정합성",REQ-001
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-032-001,Import 케이스 Case ID 자동 부여 검증,"1. Configuration 완료, Import 옵션 A 설정
+2. Import 파일(C.1.8.1 포함) 준비","1. Import 파일 업로드 실행
+2. 생성된 케이스 Case ID 확인","1. [Front] Case ID: Configuration 순서에 따른 일련번호 부여됨
+2. [Data] Import 케이스도 Configuration 규칙 적용 확인",High,Functional,"Regression,E2E,Smoke",Automation,"[연계] Import → Case ID 생성 연동. [데이터] Import 케이스 식별자",REQ-045
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-032-002,Import 케이스 C.1.8.1 파일 원본 값 유지 검증,"1. Import 옵션 A로 케이스 Import 완료","1. Import된 케이스 상세 조회
+2. C.1.8.1 값 확인","1. [Front] C.1.8.1: 파일 내 원본 값 그대로 유지됨
+2. [Data] Import 파일 C.1.8.1 값 보존 확인",High,Functional,"Regression,Integration",Automation,"[데이터] Import C.1.8.1 원본값 보존",REQ-046
+"PV > ICSR Config > Case ID > ICSR 식별자 관리",TC-CASEID-032-003,Import 케이스 Destination 확정 후 C.1.1 형식 검증,"1. Import 케이스 생성 완료 (Case ID 부여됨)","1. Destination 확정
+2. C.1.1 값 확인","1. [Front] C.1.1: [국가코드]-[조직식별자]-[일련번호] 형식으로 생성됨
+2. [Data] 전체 식별자 저장 확인",High,Functional,"Regression,Integration",Automation,"[연계] Destination 확정 → C.1.1 생성",REQ-047
+"PV > ICSR Config > Case ID > 수정 불가 정책",TC-CASEID-033-001,삭제된 케이스 일련번호 재사용 없음 검증,"1. 케이스 00001~00005 생성 완료
+2. 00005 케이스 삭제","1. 신규 케이스 생성
+2. Case ID 일련번호 확인","1. [Front] 신규 케이스 일련번호 '00006' 부여됨 (00005 재사용 없음)
+2. [Data] 삭제 번호 건너뛰고 다음 번호 채번됨
+3. [Downstream] 없음",High,Negative,Regression,Automation,"[데이터] 일련번호 재사용 불가 정책",REQ-008
+"PV > ICSR Config > Case ID > 수정 불가 정책",TC-CASEID-033-002,삭제 후 연속 번호 정상 채번 검증,"1. 00005 삭제 후 00006 생성 완료","1. 추가 케이스 생성
+2. Case ID 확인","1. [Front] 00007, 00008 순서로 정상 채번됨
+2. [Data] 연속성 유지",High,Functional,Regression,Automation,,REQ-008
+"PV > ICSR Config > Case ID > 수정 불가 정책",TC-CASEID-034-001,Case ID 필드 수정 UI 없음 검증,"1. 케이스 생성 완료 (Case ID 부여됨)","1. Case Edit 화면 진입
+2. Case ID 필드 수정 버튼/직접 입력 가능 여부 확인","1. [Front] Case ID 필드 수정 버튼 없음
+2. [Front] 직접 입력(텍스트 편집) 불가
+3. [Downstream] 없음",High,Negative,Regression,Manual,,REQ-049
+"PV > ICSR Config > Case ID > 수정 불가 정책",TC-CASEID-034-002,C.1.1 C.1.8.1 필드 수정 UI 없음 검증 (Approval 이전),"1. 케이스 생성 완료, Destination 확정 (Approval 이전 상태)","1. ICSR 보고서 > C.1.1 필드 확인
+2. C.1.8.1 필드 수정 가능 여부 확인","1. [Front] C.1.1 필드: 수정 버튼/직접 입력 불가
+2. [Front] C.1.8.1 필드: 수정 버튼/직접 입력 불가
+3. [Downstream] 없음",High,Negative,Regression,Manual,,REQ-049
+"PV > ICSR Config > Case ID > 수정 불가 정책",TC-CASEID-034-003,C.1.8.1 변경 불가 UI 안내 미표시 검증,"1. 케이스 생성 완료, ICSR 보고서 화면","1. C.1.8.1 필드 주변 UI 요소 전체 확인
+2. 툴팁, 안내 메시지, 아이콘 여부 확인","1. [Front] C.1.8.1 변경 불가 관련 툴팁/메시지/아이콘 미표시됨 (CONFIRM-005 결정)
+2. [Downstream] 없음",Medium,Negative,Regression,Manual,,REQ-051
+"PV > ICSR Config > Case ID > 수정 불가 정책",TC-CASEID-035-001,Approval 이후 C.1.1 C.1.8.1 수정 버튼 비표시 검증,"1. 케이스 Approval 처리 완료","1. ICSR 보고서 > C.1.1 필드 확인
+2. C.1.8.1 필드 확인","1. [Front] C.1.1 수정 버튼 비표시됨
+2. [Front] C.1.8.1 수정 버튼 비표시됨
+3. [Downstream] 없음",High,Functional,"Regression,Smoke",Manual,"[상태] Approval 상태 전환 후 식별자 잠금. [잠금] Approval Lock 검증",REQ-050
+"PV > ICSR Config > Case ID > 수정 불가 정책",TC-CASEID-035-002,Approval 이후 안내 문구 표시 검증,"1. 케이스 Approval 처리 완료","1. ICSR 보고서 > C.1.1/C.1.8.1 영역 확인
+2. 안내 문구 표시 여부 및 내용 확인","1. [Front] 안내 문구 표시됨: 'Approval 상태 이후로는 보고자 관리번호(C.1.1)과 고유식별 보고자 관리번호(C.1.8.1) 수정이 불가합니다.'
+2. [Downstream] 없음",High,Functional,Regression,Manual,"[상태] Approval 잠금 안내 문구 검증",REQ-050
+"PV > ICSR Config > Case ID > 수정 불가 정책",TC-CASEID-035-003,Approval 이전 수정 버튼 표시 검증 (대조),"1. 케이스 생성 완료 (Approval 이전 상태)","1. ICSR 보고서 > C.1.1, C.1.8.1 확인","1. [Front] C.1.1, C.1.8.1 수정 버튼 표시됨 (Approval 이전)
+2. [Downstream] 없음",High,Functional,Regression,Manual,"[상태] Approval 이전/이후 UI 차이 검증",REQ-050
+"PV > ICSR Config > Case ID > C.1.4 필수값",TC-CASEID-036-001,C.1.4 미입력 케이스 생성 불가 검증,"1. 케이스 생성 화면 접근","1. C.1.4 (최초 발생인지일) 미입력 상태에서 케이스 생성 시도","1. [Front] 케이스 생성 차단됨
+2. [Front] 필수 입력 안내 또는 에러 표시됨
+3. [Data] 케이스 미생성됨",High,Negative,"Regression,Smoke",Automation,"[E2B검증] C.1.4는 ICSR 필수 필드. Case ID 채번 기준 날짜 필드",REQ-053
+"PV > ICSR Config > Case ID > C.1.4 필수값",TC-CASEID-036-002,C.1.4 삭제 후 케이스 편집 저장 불가 검증,"1. C.1.4 값이 있는 케이스 준비 (편집 가능 상태)","1. 케이스 편집 화면 진입
+2. C.1.4 값 삭제
+3. 저장 시도","1. [Front] 저장 차단됨
+2. [Front] C.1.4 필수값 안내 표시됨
+3. [Data] 기존 C.1.4 값 유지됨",High,Negative,"Regression,Smoke",Automation,"[E2B검증] 편집 시 C.1.4 Null 저장 불가 정책 (기획자 명시 요청)",REQ-053
+"PV > ICSR Config > Case ID > C.1.4 필수값",TC-CASEID-036-003,C.1.4 입력 후 케이스 생성 성공 검증,"1. 케이스 생성 화면 접근","1. C.1.4 날짜 값 입력
+2. 나머지 필수 정보 입력
+3. 케이스 생성 시도","1. [Front] 케이스 정상 생성됨
+2. [Data] C.1.4 값 저장 확인
+3. [Downstream] Case ID 자동 부여됨",High,Functional,Regression,Automation,"[E2B검증] C.1.4 정상 입력 시 케이스 생성 성공",REQ-053

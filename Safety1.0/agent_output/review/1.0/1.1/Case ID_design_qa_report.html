@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design QA Report — Case ID (iVigilance Square) · v2 (Figma 기반)</title>
+<style>
+  :root{
+    --color-critical:#FF3B30;--color-major:#FF9500;--color-minor:#FFCC00;--color-info:#007AFF;--color-ok:#34C759;
+    --bg:#F5F5F7;--card:#FFFFFF;--border:#E5E5EA;--text:#1C1C1E;--text-sub:#6C6C70;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.55;padding:32px}
+  .wrap{max-width:1440px;margin:0 auto}
+  h1{font-size:24px;margin-bottom:4px}
+  h2{font-size:18px;margin:32px 0 12px;padding-bottom:6px;border-bottom:2px solid var(--border)}
+  h3{font-size:15px;margin:16px 0 8px}
+  .meta{color:var(--text-sub);margin-bottom:16px;font-size:13px}
+  .summary{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+  .summary .chip{background:var(--card);border:1.5px solid var(--border);padding:7px 14px;border-radius:20px;font-weight:600;font-size:13px}
+  .chip.critical{border-color:var(--color-critical);color:var(--color-critical)}
+  .chip.major{border-color:var(--color-major);color:var(--color-major)}
+  .chip.minor{border-color:#E5B400;color:#9A7A00}
+  .chip.info{border-color:var(--color-info);color:var(--color-info)}
+  .chip.ok{border-color:var(--color-ok);color:var(--color-ok)}
+  .chip.oos{border-color:#8E8E93;color:#6C6C70}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 24px;margin-bottom:16px}
+
+  /* Screenshot + markers */
+  .shot-wrap{position:relative;display:inline-block;max-width:100%;margin-top:8px;border:1px solid var(--border);background:#FAFAFC}
+  .shot-wrap img{display:block;width:100%;height:auto;max-width:1200px}
+  .shot-wrap .embed{width:1200px;max-width:100%;height:900px;border:0}
+  .marker{position:absolute;border-width:2px;border-style:solid;border-radius:3px;box-sizing:border-box;pointer-events:none}
+  .marker.critical{border-color:var(--color-critical);background:rgba(255,59,48,.12)}
+  .marker.major{border-color:var(--color-major);background:rgba(255,149,0,.12)}
+  .marker.minor{border-color:#E5B400;background:rgba(255,204,0,.15)}
+  .marker.info{border-color:var(--color-info);background:rgba(0,122,255,.10)}
+  .marker.estimated{border-style:dashed}
+  .marker .badge{position:absolute;top:-11px;left:-11px;width:22px;height:22px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;line-height:1}
+  .marker.critical .badge{background:var(--color-critical)}
+  .marker.major .badge{background:var(--color-major)}
+  .marker.minor .badge{background:#E5B400;color:#222}
+  .marker.info .badge{background:var(--color-info)}
+
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-top:8px}
+  th,td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:top;text-align:left;font-size:13px}
+  th{background:#FAFAFA;font-weight:600}
+  tr:last-child td{border-bottom:none}
+  td.num{white-space:nowrap;font-weight:700;text-align:center;width:36px}
+  .sev-tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;color:#fff}
+  .sev-tag.critical{background:var(--color-critical)}
+  .sev-tag.major{background:var(--color-major)}
+  .sev-tag.minor{background:#E5B400;color:#222}
+  .sev-tag.info{background:var(--color-info)}
+  .sev-tag.oos{background:#8E8E93}
+  code{background:#F0F0F3;padding:1px 5px;border-radius:4px;font-size:12px}
+  a.fig{color:var(--color-info);text-decoration:none;font-size:12px;white-space:nowrap}
+  a.fig:hover{text-decoration:underline}
+  .note{background:#FFFBEA;border-left:3px solid #E5B400;padding:10px 14px;border-radius:4px;margin:12px 0;font-size:13px}
+  .hidden-vars{display:none}
+  /* leftover var for backwards compat */
+  .sidebar-w{--sidebar-w:0}
+  /* end */
+  /* legacy rules removed */
+
+  /* === Step 4 마커 오버레이 (agent spec 4-C) === */
+  .screenshot-container {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    font-size: 0;
+  }
+  .screenshot-container > img { display: block; width: 100%; height: auto; }
+  .issue-marker {
+    position: absolute;
+    border-width: 2px; border-style: solid; border-radius: 3px;
+    box-sizing: border-box;
+    pointer-events: none;
+  }
+  .issue-marker.severity-critical  { border-color: #FF3B30; background: rgba(255,59,48,0.12); }
+  .issue-marker.severity-major     { border-color: #FF9500; background: rgba(255,149,0,0.12); }
+  .issue-marker.severity-minor     { border-color: #FFCC00; background: rgba(255,204,0,0.12); }
+  .issue-marker.severity-info      { border-color: #007AFF; background: rgba(0,122,255,0.10); }
+  .issue-marker.estimated          { border-style: dashed; }
+  .marker-badge {
+    position: absolute;
+    top: -11px; left: -11px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: bold; color: white; line-height: 1;
+    box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  }
+  .severity-critical .marker-badge  { background: #FF3B30; }
+  .severity-major    .marker-badge  { background: #FF9500; }
+  .severity-minor    .marker-badge  { background: #FFCC00; color: #333; }
+  .severity-info     .marker-badge  { background: #007AFF; }
+
+  .issue-legend { padding-left: 0; list-style: none; margin-top: 14px; }
+  .issue-legend li { padding: 6px 0; font-size: 13px; line-height: 1.5; display: flex; gap: 8px; align-items: flex-start; }
+  .issue-legend .badge { flex: 0 0 22px; height: 22px; border-radius: 50%; color: white; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+  .issue-legend .badge.critical { background: #FF3B30; }
+  .issue-legend .badge.major    { background: #FF9500; }
+  .issue-legend .badge.minor    { background: #FFCC00; color: #333; }
+  .issue-legend .badge.info     { background: #007AFF; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="card">
+  <h1>🎨 Design QA Report — Case ID <span style="font-size:14px;color:var(--text-sub);font-weight:400">(v4 · 절대좌표 + JS 변환)</span></h1>
+  <div class="meta">
+    기획서: <code>plan/Case ID - iVigilance Square - Confluence_20260424.md</code><br>
+    Figma 캔버스: ICSR Config &gt; Case ID (<code>18831:28173</code>) —
+    <a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=18831-28173" target="_blank">Figma 열기 ↗</a><br>
+    대상 프레임: <code>Case ID Rule/W1440</code> (18831:28629) · absoluteBoundingBox: x=1480, y=517, w=1440, h=1374 · 생성: 2026-04-27 · 에이전트: design-validator
+  </div>
+  <div class="summary">
+    <span class="chip critical">🔴 Critical 2</span>
+    <span class="chip major">🟠 Major 3</span>
+    <span class="chip minor">🟡 Minor 2</span>
+    <span class="chip info">🔵 Info 2</span>
+    <span class="chip oos">⬛ 본 캔버스 범위 밖 2</span>
+  </div>
+  <div class="note">
+    <b>탐색 범위:</b> URL의 <code>node-id=18831-28173</code> 섹션(ICSR Config &gt; Case ID) 안에서만 탐색했습니다.
+    Case Edit/Tracker 화면의 C.1.1 수정 UI(REQ-030, REQ-031), Case Level 일련번호 표시(REQ-027) 등은 <b>본 캔버스에 미반영</b>으로 기록했습니다(다른 페이지 확장 금지 규칙).
+  </div>
+  <div class="note" style="margin-top:8px">
+    <b>스크린샷 임베드 방식:</b> 마커 좌표는 Figma의 <code>absoluteBoundingBox</code>를 <code>data-frame-*</code>/<code>data-fig-*</code>에 그대로 복사했고, % 변환은 페이지 하단 JavaScript가 런타임에 수행합니다(에이전트 산술 누적오차 방지).<br>
+    이미지는 <code>get_screenshot</code>이 반환한 정적 PNG URL을 <code>&lt;img&gt;</code>에 직접 연결했습니다(iframe 사용 금지 규칙 준수). 본 환경에서 터미널 도구가 없어 <b>Base64 변환은 수행하지 못했으며</b>, Figma asset URL은 약 7일 후 만료됩니다.
+  </div>
+</header>
+
+<h2>1. 이슈 갤러리 — 마킹된 스크린샷</h2>
+<p class="meta">W1440 프레임(1440×1374px) 전체. 번호는 아래 이슈 테이블과 일치합니다. 🔴 Critical / 🟠 Major / 🟡 Minor / 🔵 Info. 점선(dashed) 박스는 "기획서 기준 있어야 할 예상 위치"(Missing). Figma 프레임 좌표를 %로 환산한 상대 위치입니다.</p>
+
+<div class="screenshot-container"
+  data-frame-x="1480" data-frame-y="517" data-frame-w="1440" data-frame-h="1374">
+  <!-- get_screenshot 결과 PNG. 본 환경 제약(터미널 부재)으로 Base64 변환 미수행, 정적 asset URL 사용. URL은 약 7일 후 만료. iframe 사용 금지 규칙은 준수. -->
+  <img src="https://www.figma.com/api/mcp/asset/9675997f-e954-43b3-90b2-a8142ce4614c"
+       alt="Case ID Rule/W1440 (18831:28629)" width="1024" height="978">
+
+  <!-- ① ISSUE-001 — Year 라디오 'N/A' 옵션 누락 (예상 위치: YYYY 라디오 바로 아래)
+       Frame Year Setting > Setting Value > Radio Group > Radio Options. YYYY 옵션 abs (1480+266+0+0+16+0+218+90+10+268+0+34+44=, hand-rolled)
+       computed: x=2030, y=1168, w=300, h=38 -->
+  <div class="issue-marker severity-critical estimated"
+    data-fig-x="2030" data-fig-y="1168" data-fig-w="300" data-fig-h="38"
+    title="① Year N/A 옵션 누락 (예상 위치)">
+    <span class="marker-badge">1<sup>?</sup></span>
+  </div>
+
+  <!-- ② ISSUE-002 — Year Info Banner (19141:42063): abs (2030, 1052), 848×24 -->
+  <div class="issue-marker severity-major"
+    data-fig-x="2030" data-fig-y="1052" data-fig-w="848" data-fig-h="24"
+    title="② Year 안내 배너 문구 불일치">
+    <span class="marker-badge">2</span>
+  </div>
+
+  <!-- ③ ISSUE-003 — 자릿수 Vertical Field (18831:28684): abs (2030, 962), 254×50 -->
+  <div class="issue-marker severity-major"
+    data-fig-x="2030" data-fig-y="962" data-fig-w="254" data-fig-h="50"
+    title="③ 자릿수 드롭다운 옵션 범위 확정 필요">
+    <span class="marker-badge">3</span>
+  </div>
+
+  <!-- ④ ISSUE-004 — Starting Number Field (18831:28685): abs (2292, 962), 300×69 -->
+  <div class="issue-marker severity-minor"
+    data-fig-x="2292" data-fig-y="962" data-fig-w="300" data-fig-h="69"
+    title="④ 시작 번호 상한·최후 번호 검증 UI 미반영">
+    <span class="marker-badge">4</span>
+  </div>
+
+  <!-- ⑤ ISSUE-005 — Custom Text Setting Value (18831:28793): abs (2030, 1307), 254×47 -->
+  <div class="issue-marker severity-major"
+    data-fig-x="2030" data-fig-y="1307" data-fig-w="254" data-fig-h="47"
+    title="⑤ 자유 텍스트 입력 방식 — 칩+Text Input vs 체크박스/라디오">
+    <span class="marker-badge">5</span>
+  </div>
+
+  <!-- ⑥ ISSUE-006 — Custom Text Helper (18831:28796): abs (2030, 1339), 254×15 -->
+  <div class="issue-marker severity-minor"
+    data-fig-x="2030" data-fig-y="1339" data-fig-w="254" data-fig-h="15"
+    title="⑥ Custom Text helper 최소 1자 미표기">
+    <span class="marker-badge">6</span>
+  </div>
+
+  <!-- ⑦ ISSUE-007 — Period Info (19141:42053): abs (2574, 565), 332×16 -->
+  <div class="issue-marker severity-info"
+    data-fig-x="2574" data-fig-y="565" data-fig-w="332" data-fig-h="16"
+    title="⑦ Period Info (Design Only)">
+    <span class="marker-badge">7</span>
+  </div>
+
+  <!-- ⑧ ISSUE-008 — '권장' Badge (18831:28810): abs (2274, 1468), 40×22 -->
+  <div class="issue-marker severity-info"
+    data-fig-x="2274" data-fig-y="1468" data-fig-w="40" data-fig-h="22"
+    title="⑧ '권장' 배지 (Design Only)">
+    <span class="marker-badge">8</span>
+  </div>
+
+  <!-- ⑨ ISSUE-009 — 만료 팝업 본 캔버스 미반영 (전체 프레임 점선 오버레이): abs (1480, 517), 1440×1374 -->
+  <div class="issue-marker severity-critical estimated"
+    data-fig-x="1480" data-fig-y="517" data-fig-w="1440" data-fig-h="1374"
+    title="⑨ 만료 팝업 본 캔버스 미반영 (Case 생성 화면 별도 검증)">
+    <span class="marker-badge">9<sup>?</sup></span>
+  </div>
+</div>
+
+<ol class="issue-legend">
+  <li><span class="badge critical">1</span><div><b>Year "N/A" 라디오 옵션 누락 (예상 위치)</b> — 기획서 §Year 표(YY/YYYY/N/A) 기준. 점선 마커는 Figma에 노드가 없어 형제(YYYY) 좌표를 참고한 추정 위치임을 표시.</div></li>
+  <li><span class="badge major">2</span><div><b>Year 안내 배너 문구 불일치</b> — 기획서 툴팁("연도/연월 선택 시…N/A 선택 시 누적") vs Figma 배너("매년 1월 1일…미선택 시 누적").</div></li>
+  <li><span class="badge major">3</span><div><b>자릿수 드롭다운 옵션 범위 확인 필요</b> — 기본값 "5자리(00000~99999)"만 노출, 본문 3~9 vs 와이어 5~9 확정 필요.</div></li>
+  <li><span class="badge minor">4</span><div><b>시작 번호 상한 / 최후 번호 검증 UI 미반영</b> — helper "입력 시 시작번호부터 Case ID가 생성됩니다."만 존재, 에러·경고 부재.</div></li>
+  <li><span class="badge major">5</span><div><b>자유 텍스트 입력 방식 불일치</b> — 기획서: 체크박스/라디오 vs Figma: 칩(D&D) + Text Input.</div></li>
+  <li><span class="badge minor">6</span><div><b>Custom Text helper 최소 1자 미표기</b> — "영문/숫자, 최대 6글자"만 표기.</div></li>
+  <li><span class="badge info">7</span><div><b>Period Info (Design Only)</b> — Preview 우상단 "매년 1일 일련번호 초기화 • 연간 최대 처리: 99,999건 (5자리 기준)". 기획서 명시 없음.</div></li>
+  <li><span class="badge info">8</span><div><b>'권장' 배지 (Design Only)</b> — Import Option A 카드 우측. 기획서는 "Default=A"만 명시.</div></li>
+  <li><span class="badge critical">9</span><div><b>만료 임박 팝업 본 캔버스 미반영</b> — 점선 전체 오버레이는 본 캔버스가 검증 범위 밖임을 표시. Case 생성 화면 별도 캔버스 URL 필요.</div></li>
+</ol>
+
+<h2>2. 이슈 테이블</h2>
+<table>
+  <thead>
+    <tr>
+      <th>#</th><th>심각도</th><th>분류</th><th>이슈</th>
+      <th>기획서 출처</th><th>REQ_Id</th><th>Figma 노드</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="num">1</td>
+      <td><span class="sev-tag critical">Critical</span></td>
+      <td>Missing</td>
+      <td><b>Year 라디오 "N/A" 옵션 누락.</b> 기획서 §Year 표에는 <code>YY / YYYY / N/A</code> 3가지가 정책으로 명시되어 있는데, Figma에는 <code>YY (eg:26)</code>, <code>YYYY (eg:2026)</code> 2개만 노출됨 (YYMM/YYYYMM Radio Option은 <code>hidden=true</code>로 레이아웃에만 존재). 결과적으로 "연도 미표기 + 누적 채번" 정책(REQ-005)을 선택할 UI가 없어 해당 비즈니스 규칙을 사용할 수 없음. Info Banner의 "미선택 시" 문구로 암묵적 대체된 것으로 추정되나 정책 재정의가 필요.</td>
+      <td>§Year / §번호 조합 구성 요소 설정</td>
+      <td>REQ-004, REQ-005</td>
+      <td><a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=18831-28697" target="_blank">Radio Options ↗</a></td>
+    </tr>
+    <tr>
+      <td class="num">2</td>
+      <td><span class="sev-tag major">Major</span></td>
+      <td>Mismatch</td>
+      <td><b>Year 안내 배너 문구 불일치.</b> 기획서 툴팁: <i>"연도 선택 시 매년 초, 연월 선택 시 매월 초에 일련번호가 '00001'로 초기화됩니다. <b>N/A 선택 시</b> 초기화 없이 번호가 계속 누적됩니다."</i> → Figma 배너: <i>"매년 1월 1일에 일련번호가 '00001'로 초기화됩니다. <b>미선택 시</b> 초기화 없이 번호가 계속 누적됩니다."</i> ① 월 초기화(YYMM/YYYYMM) 언급 삭제, ② "N/A 선택" → "미선택"으로 의미 변경 — 정책 해석을 바꾸는 문구.</td>
+      <td>§Year (툴팁 문구)</td>
+      <td>REQ-006</td>
+      <td><a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=19141-42063" target="_blank">Info Banner ↗</a></td>
+    </tr>
+    <tr>
+      <td class="num">3</td>
+      <td><span class="sev-tag major">Major</span></td>
+      <td>Spec Gap</td>
+      <td><b>자릿수 드롭다운 옵션 범위 확정 필요.</b> 기획서 본문: <code>3, 4, 5, 6, 7, 8, 9</code>. Figma 기본 표시는 <code>5자리 (00000-99999)</code>. Preview 상단 Period Info도 <code>"연간 최대 처리: 99,999건 (5자리 기준)"</code>로 5자리 기준 하드코딩. 실제 Dropdown의 옵션이 3~9 전체인지 5~9인지 디자인만으로는 확정 불가(RTM v0 MISMATCH-002 연계).</td>
+      <td>§일련번호 자릿수 설정</td>
+      <td>REQ-010</td>
+      <td><a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=19086-31373" target="_blank">Dropdown ↗</a></td>
+    </tr>
+    <tr>
+      <td class="num">4</td>
+      <td><span class="sev-tag minor">Minor</span></td>
+      <td>Spec Gap</td>
+      <td><b>시작 번호 상한 제한(최대 - 400) 안내/검증 UI 미반영.</b> Figma helper는 <code>"입력 시 시작번호부터 Case ID가 생성됩니다."</code>만 존재. 상한 초과 시 에러 메시지·비활성·경고가 없으며, "기존 생성된 최후 번호보다 커야 함"(REQ-014) 검증 피드백도 부재.</td>
+      <td>§시작 번호 설정 제한 정책 / §최후 번호 검증 규칙</td>
+      <td>REQ-013, REQ-014</td>
+      <td><a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=19086-31374" target="_blank">Starting Number Field ↗</a></td>
+    </tr>
+    <tr>
+      <td class="num">5</td>
+      <td><span class="sev-tag major">Major</span></td>
+      <td>Mismatch</td>
+      <td><b>자유 텍스트 입력 방식 불일치.</b> 기획서 §자유 텍스트는 ① "체크박스 형태로 선택", ② "라디오 버튼 선택하여 텍스트 블록 추가"로 충돌(RTM MISMATCH-003). 실제 Figma는 <b>Segment Builder(칩 D&amp;D) + 단순 Text Input</b>으로 구현 — 체크박스/라디오 모두 존재하지 않음. 기획서 본문을 실제 UI(칩 기반) 기준으로 정정 필요.</td>
+      <td>§자유 텍스트 추가</td>
+      <td>REQ-009</td>
+      <td><a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=18831-28374" target="_blank">Custom Text Setting ↗</a></td>
+    </tr>
+    <tr>
+      <td class="num">6</td>
+      <td><span class="sev-tag minor">Minor</span></td>
+      <td>Spec Gap</td>
+      <td><b>Custom Text helper에 최소 글자(1자) 표기 누락.</b> 기획서 "1-6자" vs Figma <code>"영문/숫자, 최대 6글자"</code>. 빈 값 Save 에러(개발 참고에 명시) 로직은 존재하나 사전 고지가 부족.</td>
+      <td>§자유 텍스트 추가</td>
+      <td>REQ-009</td>
+      <td><a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=18831-28377" target="_blank">Helper Text ↗</a></td>
+    </tr>
+    <tr>
+      <td class="num">7</td>
+      <td><span class="sev-tag info">Info</span></td>
+      <td>Design Only</td>
+      <td><b>Preview 상단 "Period Info" 영역.</b> Figma는 Preview 우측에 <code>"매년 1일 일련번호 초기화 • 연간 최대 처리: 99,999건 (5자리 기준)"</code> 동적 문구를 추가. 기획서에는 명시 없음. 유용한 추가 디자인이나, 문구의 동적 규칙(Year/자릿수별 변형)을 기획서에 보완 기재 권장.</td>
+      <td>(기획서 없음)</td>
+      <td>-</td>
+      <td><a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=19141-42048" target="_blank">Period Info ↗</a></td>
+    </tr>
+    <tr>
+      <td class="num">8</td>
+      <td><span class="sev-tag info">Info</span></td>
+      <td>Design Only</td>
+      <td><b>Import Option A에 "권장" 배지 표시.</b> 기획서는 "Default = A"만 정책으로 명시. Figma는 <code>권장</code> 배지로 시각적 안내 — 정책 일관성 있음. 배지 UX 표기 방식을 기획서에 보완 기재 권장.</td>
+      <td>§Import 설정</td>
+      <td>REQ-024</td>
+      <td><a class="fig" href="https://www.figma.com/design/UwDGzHxNEV9q5u3IIzmkjo/iVigilance-Square?node-id=18831-28391" target="_blank">Badge ↗</a></td>
+    </tr>
+    <tr>
+      <td class="num">9</td>
+      <td><span class="sev-tag critical">Critical</span></td>
+      <td>Missing</td>
+      <td><b>Case ID 만료 임박 팝업 미반영(본 캔버스 기준).</b> REQ-019/020/021/022: 남은 번호 ≤ 100 시점에 "마지막 Case ID + 자동 확장 안내 + New Case ID 예시" 팝업 + <code>Do not show again</code> + <code>Confirm</code> 동작이 필요함. 본 Config 캔버스(18831:28173)에는 해당 팝업 프레임이 없음 — 팝업은 Case 생성 시점 흐름이므로 <b>Case 생성 화면 캔버스에 별도 설계</b>되었을 가능성 높음. 별도 Figma URL 확보 후 재검증 필요.</td>
+      <td>§Case ID 만료 경고 및 자동 자릿수 확장</td>
+      <td>REQ-019, REQ-020, REQ-021, REQ-022</td>
+      <td>(본 캔버스 미반영)</td>
+    </tr>
+
+    <tr>
+      <td class="num">—</td>
+      <td><span class="sev-tag oos">OOS</span></td>
+      <td>본 캔버스 범위 밖</td>
+      <td><b>Case Level 일련번호만 표시 사양.</b> REQ-027: Tracker List / Case Edit의 Case ID 필드는 "일련번호만" 표시(예: <code>202604ST001</code>). 본 Config 캔버스에는 Tracker/Case Edit 화면이 없음. 별도 페이지 캔버스에서 별도 검증 필요.</td>
+      <td>§Case vs Report 식별자 노출 사양</td>
+      <td>REQ-027</td>
+      <td>(다른 페이지)</td>
+    </tr>
+    <tr>
+      <td class="num">—</td>
+      <td><span class="sev-tag oos">OOS</span></td>
+      <td>본 캔버스 범위 밖</td>
+      <td><b>C.1.1 수정 버튼 + 알럿 + Approval 이후 비표시.</b> REQ-030/031: "수정 버튼 클릭 → 알럿 → Confirm(수정 허용+Sync 해제)/Cancel", "Approval 이후 수정 버튼 비표시". 본 캔버스는 Config 화면이며 Case Edit UI 미포함. 별도 페이지 캔버스에서 별도 검증 필요.</td>
+      <td>§C.1.1 동작 설정 / §C.1.1 변경 시점</td>
+      <td>REQ-030, REQ-031</td>
+      <td>(다른 페이지)</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2>3. 일치 항목 (주요 ✅)</h2>
+<table>
+  <thead><tr><th>항목</th><th>기획서</th><th>Figma 구현</th><th>REQ_Id</th></tr></thead>
+  <tbody>
+    <tr><td>기본 구조 <code>[국가]-[조직]-[번호]</code></td><td>§기본 구조</td><td>Preview: <code>KR - ABCDEFGHIJ - 00001 26 SP NUCLE ·····</code> (하이픈 규칙 포함)</td><td>REQ-001</td></tr>
+    <tr><td>조직 식별자 1-10자, 영숫자</td><td>§조직 식별자 입력</td><td>Fixed Field 라벨 "조직 식별자(영문/숫자, 최대 10자)" + 개발 참고에 입력 차단 규칙 명시</td><td>REQ-003</td></tr>
+    <tr><td>Type of Report SP/RS/OT/UN 매핑</td><td>§Type of Report</td><td>Badge 4종: Spontaneous→SP / Report from Study→RS / Other→OT / Unknown→UN</td><td>REQ-007</td></tr>
+    <tr><td>Product Abbreviation · 없으면 UNK</td><td>§Product Abbreviation</td><td>Info Banner: "Admin의 Product Config에 등록된 제품 약어를 참조합니다. 값이 없으면 UNK으로 표시됩니다."</td><td>REQ-008</td></tr>
+    <tr><td>포맷 설정 Drag &amp; Drop → Preview 실시간</td><td>§포맷 설정 및 인터랙션</td><td>Segment Builder(칩 D&amp;D) + 상단 Preview 반영, 칩 인터랙션 Flow 개발 참고에 상세</td><td>REQ-015</td></tr>
+    <tr><td>칩 미선택 시 해당 설정 영역 비활성화</td><td>§포맷 설정 및 인터랙션</td><td>개발 참고: "칩 제거 → 하단 설정 영역 비활성화(opacity 40%)"</td><td>REQ-016, REQ-017</td></tr>
+    <tr><td>Preview 상단 고정</td><td>§와이어프레임</td><td>Breadcrumb &amp; Preview 영역 상단 배치, "Preview(상단 고정 영역)" 개발 참고</td><td>REQ-018</td></tr>
+    <tr><td>Import Option A (Default=A)</td><td>§Import 설정</td><td>Option A 카드에 "권장" 배지 + 개발 참고 "기본값: 옵션 A"</td><td>REQ-024</td></tr>
+    <tr><td>Import Option B</td><td>§Import 설정</td><td>Option B 카드 문구 기획서와 일치</td><td>REQ-025</td></tr>
+    <tr><td>Tracker 표시 안내</td><td>§Case vs Report</td><td>Preview 하단 Tracker Notice: "Tracker의 Case ID에는 국가코드와 조직 식별자를 제외한 값만 표시됩니다."</td><td>REQ-027(Config 내 안내)</td></tr>
+  </tbody>
+</table>
+
+<h2>4. 다음 단계 제안</h2>
+<div class="card">
+  <ol style="padding-left:20px;line-height:1.8">
+    <li><b>🔴 Critical #1 (Year N/A 누락):</b> Year 라디오에 <code>N/A</code> 옵션 추가 <i>또는</i> 기획서에서 N/A 정책 삭제 결정 필요. 현재 Figma Info Banner "미선택 시..."는 N/A를 "라디오 미선택 상태"로 암묵 재정의한 것으로 보임 → <b>정책 재정의 필요</b>.</li>
+    <li><b>🔴 Critical #9 (만료 팝업):</b> Case 생성 화면 캔버스 URL 확보 후 별도 design-validator 실행 필요.</li>
+    <li><b>🟠 Major #2, #3, #5:</b> 기획서 문구/정책을 디자인 현행화 기준으로 정정 — 연 초기화만, 드롭다운 범위 확정, 자유텍스트 칩 기반.</li>
+    <li><b>🟡 Minor #4, #6:</b> 시작 번호 상한·최후 번호 검증 에러 UI 추가, Custom Text helper 최소 글자 표기.</li>
+    <li><b>⬛ OOS 2건:</b> Tracker/Case Edit 캔버스 URL 확보 시 해당 노드로 별도 design-validator 재실행.</li>
+    <li>승인 후 <code>scenario-writer</code> 진행. 🔴 Critical 이슈는 "시나리오에 이슈 컨텍스트 전달" 여부를 사용자가 결정.</li>
+  </ol>
+</div>
+
+</div>
+<script>
+  // agent spec 4-C: Figma 절대좌표 → CSS % 변환 (LLM 산술 금지, JS가 정확히 계산)
+  document.querySelectorAll('.screenshot-container').forEach(function(c) {
+    var fx = +c.dataset.frameX, fy = +c.dataset.frameY,
+        fw = +c.dataset.frameW, fh = +c.dataset.frameH;
+    c.querySelectorAll('.issue-marker').forEach(function(m) {
+      var mx = +m.dataset.figX - fx, my = +m.dataset.figY - fy,
+          mw = +m.dataset.figW,      mh = +m.dataset.figH;
+      m.style.left   = (mx / fw * 100).toFixed(3) + '%';
+      m.style.top    = (my / fh * 100).toFixed(3) + '%';
+      m.style.width  = (mw / fw * 100).toFixed(3) + '%';
+      m.style.height = (mh / fh * 100).toFixed(3) + '%';
+    });
+  });
+</script>
+</body>
+</html>
