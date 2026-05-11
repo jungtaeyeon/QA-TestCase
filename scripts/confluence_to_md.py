@@ -24,7 +24,7 @@ from typing import TYPE_CHECKING, Optional
 from urllib.parse import urlparse
 
 if TYPE_CHECKING:
-    import requests
+    import requests 
 
 
 DEFAULT_ENV_PATH = ".env"
