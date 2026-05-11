@@ -218,6 +218,7 @@ Q1. 모든 Expected Result가 "A = B" 단정으로 표현 가능?
 | Regression 커버리지 | 최소 1건 필수 (외부 연동 전용은 Integration 단독 허용) |
 | folder_name 금지어 | `E2E`, `Regression`, `Smoke`, `Automation`, `Manual`, `Both`, Priority명, `/`, `\` |
 | **태그 보증** | `Memo`에 `[태그]`가 있고 `[!확인필요!]`가 없으면 `REQ_Id` 필수 |
+| **파일 저장** | CSV 파일 마지막 행 뒤에 빈 줄(trailing newline) 없이 저장. 마지막 셀 값 직후 파일이 끝나야 함 |
 
 ---
 
@@ -255,6 +256,7 @@ Q1. 모든 Expected Result가 "A = B" 단정으로 표현 가능?
 - [ ] Preconditions가 TC 실행에 충분한 정보를 포함하는가
 - [ ] **`[!확인필요!]` 태그 존재 시**: 시나리오 `확인 필요 사항`에 동기화 완료
 - [ ] **보증 검증**: `[태그]`만 있는 TC의 REQ_Id에 기획서 근거가 명시되어 있는가
+- [ ] **파일 저장**: CSV 마지막 행 뒤에 빈 줄 없음 (trailing newline 제거)
 
 ### Step 5. 시나리오 역추적 + TC 커버리지 산출
 - [ ] TC 매핑 상태 테이블에 TC ID 범위 기입 (⏳→✅)

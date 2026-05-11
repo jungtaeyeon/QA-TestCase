@@ -20,6 +20,18 @@ description: PV 도메인 TC를 Testiny MCP로 업로드하는 절차와 CSV-Tes
 
 ## 1. 업로드 절차
 
+### ⛔ 필수 전제: MCP 도구 연결 확인 (REST API fallback 금지)
+
+> **Testiny REST API는 폴더 배치를 지원하지 않습니다.**
+> `POST /api/v1/testcase`의 `testcase_folder_id` 필드와 `GET /api/v1/testcase?testcase_folder_id=` 필터는 **모두 silently ignored** 됩니다.
+> 폴더 배치는 반드시 MCP 도구(`createTestCase`, `moveTestCases`)를 통해서만 가능합니다.
+>
+> **업로드 시작 전 반드시 `listProjects` MCP 도구를 호출해 MCP 연결을 확인합니다.**
+> MCP 도구가 응답하지 않으면 즉시 업로드를 중단하고, 사용자에게 다음을 보고합니다:
+> 1. MCP 연결 실패 사실
+> 2. 실패 원인 추정 (주로 `~/.claude/settings.json`의 API 키 만료/교체 여부)
+> 3. 해결 방법: `settings.json`의 `mcpServers.testiny.headers.Authorization` 키를 `.env`의 `TESTINY_API_KEY`로 교체 후 Claude Code 재시작
+
 ### Step 1. 사전 검증
 업로드 전 TC CSV가 `tc-writing-rules` 품질 기준을 충족하는지 확인합니다.
 - Lint 규칙 전체 통과 여부 (섹션 4 참조)

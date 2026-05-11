@@ -1,5 +1,5 @@
 # RTM — Case ID
-> 버전: v3 | 생성: 2026-05-06 | 갱신: 2026-05-07 | 갱신 에이전트: tc-writer | 파이프라인 상태: TC 작성 완료, 리뷰 대기
+> 버전: v4 | 생성: 2026-05-06 | 갱신: 2026-05-08 | 갱신 에이전트: tc-reviewer | 파이프라인 상태: 리뷰 완료 (PASS), tc-uploader 대기
 
 ## 메타데이터
 - 기획서 경로: `exports/confluence/기획 문서/00. Common (공통 정책)/Admin (Org Admin)/ICSR Config/Case ID/Case ID.md`
@@ -9,9 +9,10 @@
 - 총 요구사항 수: 57건 (REQ-001~REQ-057)
 - 제외 항목 수: 2건 (REQ-EX-001 TBD, REQ-046 N/A — Null 케이스 없음)
 - 검증 대상 요구사항: 56건
-- TC 작성 보류 요구사항: 1건 (REQ-025, MISSING-010 미해결)
+- TC 작성 보류 요구사항: 0건 (MISSING-010 해결로 TC 작성 완료)
 - 기획자 답변 v1.2 반영: CONFLICT-001/002/003, MISSING-002/003/004/005/006/007/008/009/012, CONFIRM-001/002 해결 (13건)
-- TC 작성 완료: 97건 (Smoke 12건, E2E 13건) | TC 보류: 1건 (REQ-025, MISSING-010 미해결)
+- 기획자 답변 v1.3 반영: MISSING-010/CONFIRM-003/MISSING-006 해결 (추가 3건)
+- TC 작성 완료: 98건 (Smoke 12건, E2E 13건) | TC 보류: 0건
 - TC 파일 경로: `TC/1.2/Case ID_TC.csv`
 
 ---
@@ -44,7 +45,7 @@
 | REQ-022 | Suspect 자사 제품 2개 이상 시 입력 순서 기준 첫 번째 약어 표시 [✅ CONFIRM-002 해결] | 비즈니스 규칙 | 번호 조합 > Product Abbreviation | - | SC-CASEID-017 | - | TC 작성 완료 |
 | REQ-023 | Product Config 약어 삭제/변경 시 기존 Case ID 불변, 신규/Import 케이스에만 반영 [✅ MISSING-012 해결] | 비즈니스 규칙 | 번호 조합 > Product Abbreviation | - | SC-CASEID-018 | - | TC 작성 완료 |
 | REQ-024 | 자유 텍스트: 체크박스 선택, 라디오 버튼으로 텍스트 블록 추가, 영문+숫자, 최대 6글자 | 기능명세 | 번호 조합 > 자유 텍스트 | - | SC-CASEID-019, SC-CASEID-020 | - | TC 작성 완료 |
-| REQ-025 | 자유 텍스트 최솟값 및 빈값 저장 처리 [⏸ MISSING-010 미해결 — 기획자 확인 필요] | 데이터 규칙 | 번호 조합 > 자유 텍스트 | - | SC-CASEID-021 | - | TC보류 |
+| REQ-025 | 자유 텍스트 빈값 저장 시 칩 미등록 상태 동일 처리 [✅ MISSING-010 해결] | 데이터 규칙 | 번호 조합 > 자유 텍스트 | - | SC-CASEID-021 | TC-CASEID-021-001 | TC 작성 완료 |
 | REQ-026 | 자유 텍스트: 드래그 앤 드롭으로 원하는 위치에 배치 가능 | 기능명세 | 번호 조합 > 자유 텍스트 | - | SC-CASEID-019 | - | TC 작성 완료 |
 | REQ-027 | 일련번호 자릿수: 3, 4, 5, 6, 7, 8, 9 중 선택 (최대 9자리), Zero-padding 적용 | 기능명세 | 일련번호 자릿수 설정 | - | SC-CASEID-022 | - | TC 작성 완료 |
 | REQ-028 | 일련번호 자릿수 변경 시 이후 생성 케이스부터 적용 (기존 케이스 소급 없음) | 비즈니스 규칙 | 일련번호 자릿수 설정 | - | SC-CASEID-023 | - | TC 작성 완료 |
@@ -105,8 +106,35 @@
 | 9 | MISSING-007 | 만료 팝업 New Case ID 산출 방식 | REQ-039 | TC 작성 완료 | ✅ 해결: 자릿수 확장 후 첫 번째 번호 (99999→100000) → SC-CASEID-034 |
 | 10 | MISSING-008 | 하루 보지 않기 후 자릿수 초과 전환 시 사용자 인지 방법 | REQ-042 | TC 작성 완료 | ✅ 해결: 별도 알림 없이 24시간 내 팝업 재노출 가능 → SC-CASEID-037 |
 | 11 | MISSING-009 | Import 옵션 A + C.1.8.1 Null 시 자동 복사 규칙 적용 여부 | REQ-046 | N/A 제외 | ✅ 해결: Null 케이스 없음 → REQ-046 N/A |
-| 12 | MISSING-010 | 자유 텍스트 최솟값 및 빈값 저장 처리 | REQ-025 | TC 작성 보류 | ⏸ 미해결: 기획자 "확인 필요" → SC-CASEID-021 보류 |
+| 12 | MISSING-010 | 자유 텍스트 최솟값 및 빈값 저장 처리 | REQ-025 | TC 작성 완료 | ✅ 해결: 공란 저장 시 칩 제거된 상태와 동일(칩 미등록) → TC-CASEID-021-001 |
 | 13 | MISSING-012 | Product Config 약어 삭제 시 기존 Case ID 처리 | REQ-023 | TC 작성 완료 | ✅ 해결: 기존 케이스 불변, 신규/Import만 반영 → SC-CASEID-018 |
 | 14 | CONFIRM-001 | 국가코드 우선순위 3-1번 계층 구조 | REQ-009 | TC 작성 완료 | ✅ 해결: 3번 조건 내부 세부처리, 4단계 유지 → SC-CASEID-004 |
 | 15 | CONFIRM-002 | Suspect 자사 제품 "첫 번째 순서" 기준 | REQ-022 | TC 작성 완료 | ✅ 해결: "첫 번째 순서"로 명시(입력 순서) → SC-CASEID-017 |
-| 16 | CONFIRM-003 | "최대 생성 가능 숫자" 기준값 정의 | REQ-032 | TC 가능, 전제값 보류 | ⚠️ 보류 유지: TC 작성 가능하나 전제 조건값 확인 필요 → SC-CASEID-027 |
+| 16 | CONFIRM-003 | "최대 생성 가능 숫자" 기준값 정의 | REQ-032 | TC 업데이트 완료 | ✅ 해결: 현재 설정 자릿수 최대값(5자리=99999) → TC-CASEID-027-001~002 Preconditions·Memo 갱신 |
+
+---
+
+## 리뷰 결론 (v4)
+
+| 항목 | 값 |
+|------|-----|
+| 리뷰 일자 | 2026-05-08 |
+| 리뷰 에이전트 | tc-reviewer (05) |
+| **최종 판정** | **✅ PASS** |
+| TC 총 건수 | 98건 |
+| Smoke | 12건 (12.2%) ✅ |
+| E2E | 13건 (13.3%) ✅ |
+| Lint 검사 | 전 항목 PASS |
+| REQ 커버리지 | 56/56 (100%) |
+| 보류 TC | 0건 |
+| [!확인필요!] TC | 0건 |
+| 리뷰 리포트 경로 | `Safety1.0/agent_output/review/1.2/Case ID_review.md` |
+| 다음 단계 | tc-uploader (06) |
+
+### 액션 아이템
+
+| 우선순위 | 항목 |
+|---------|------|
+| ✅ 완료 | MISSING-010 해결 — TC-CASEID-021-001 추가 작성 완료 |
+| ✅ 완료 | CONFIRM-003 해결 — TC-CASEID-027-001~002 Preconditions·Memo 갱신 완료 |
+| ✅ 완료 | MISSING-006 해결 — TC-CASEID-046-001 title·Expected Results 갱신 완료 |
